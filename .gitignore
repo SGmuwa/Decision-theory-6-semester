@@ -1,0 +1,6 @@
+
+*.tlog
+DecisionTheoryPrograms/Debug/DecisionTheoryPrograms.log
+*.obj
+*.idb
+*.pdb
