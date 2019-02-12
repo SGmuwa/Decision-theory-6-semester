@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "UserInterface.h"
 #include "Test.h"
+#include "simplex.h"
 
 /*
 Функция, которую будет подставлять в Симплекс метод.
@@ -17,7 +18,7 @@ output: указатель, куда надо записать значение 
 */
 int Simplex_test_function(unsigned char length, const double * x, double * output) {
 	if (length != 2) {
-		printf("simplex_test_function: length = %hh\n", length);
+		printf("simplex_test_function: length = %h\n", length);
 		return 1;
 	}
 	if (x == NULL) {

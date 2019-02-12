@@ -13,7 +13,7 @@ int Test_assertEqualsInt(const wchar_t * message, int expect, int actual) {
 
 int Test_assertEqualsDouble(const wchar_t * message, double expect, double actual, double accuracy) {
 	if (accuracy < 0) {
-		wprintf(L"accuracy must be 0 or more!\r\n%s\r\nexpect:%l\r\nactual:%l\r\naccuracy:%l\r\n", message, expect, actual);
+		wprintf(L"accuracy must be 0 or more!\n%s\nexpect:%l\nactual:%l\naccuracy:%l\n", message, expect, actual);
 		return 2;
 	}
 	if (actual - accuracy < expect
