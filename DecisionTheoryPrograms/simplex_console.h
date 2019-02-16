@@ -21,7 +21,7 @@ int Simplex_Console_fmain(FILE * in, FILE * out) {
 	int isNeedMax = UserInterface_GetChek("0 - необходимо min\n1 - необходимо max", 1);
 	double accuracy = UserInterface_GetDoubleLimit("Необходимая точность симплекса: ", DBL_MIN, DBL_MAX);
 	double output = nan(NULL);
-	int error = Simplex_run(Simplex_Console_function, isNeedMax, accuracy, &output);
+	int error = Simplex_run(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, &output);
 	if (isnan(output))
 		wprintf(L"Произошла ошибка симплекса: %d\n", error);
 	else
