@@ -17,6 +17,7 @@ double edgeLength: Длинна ребра симплекс-метода.
 char isNeedMax: Поставьте true, если надо искать максимум. Иначе - false.
 double accuracy: Заданная точность ответа.
 double * output: Указатель, куда записать аргумент-вектор минимума или максимума.
+const double * start: Указатель на начальный вектор.
 FILE * out: Указатель, куда надо отправлять информацию об отладке. Укажите NULL, чтобы ничего не отправлять.
 Возвращает: код ошибки.
 1 - Функция не реализована.
@@ -25,9 +26,12 @@ FILE * out: Указатель, куда надо отправлять инфо�
 4 - Ошибка при вызове функции.
 5 - Ошибка при поиске fvalue_minmax.
 */
-int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, FILE * out) {
+int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, FILE * out) {
 	if (f == NULL || output == NULL)
 		return 2;
+	if (length > 2) {
+		return 1;
+	}
 	double * memory = (double*)malloc(7 * length * sizeof(double)) + 0 * length;
 	double * x[] = { memory + 0 * length, // current
 		memory + 1 * length, // one
@@ -41,9 +45,10 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	if (memory == NULL)
 		return 3;
 	for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
-		for (unsigned char ii = 4 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+		for (unsigned char ii = 4 - 1; ii != 0; ii--) {
 			x[ii][i] = 0.0;
 		}
+		x[0][i] = start[i];
 		d[i] = 0.0;
 		x_center[i] = 0.0;
 		x_mirror[i] = 0.0;
@@ -233,6 +238,6 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 Возвращает: код ошибки.
 1 - Функция не реализована.
 */
-int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output) {
-	return Simplex_runPrint(f, length, edgeLength, isNeedMax, accuracy, output, NULL);
+int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start) {
+	return Simplex_runPrint(f, length, edgeLength, isNeedMax, accuracy, output, start, NULL);
 }
