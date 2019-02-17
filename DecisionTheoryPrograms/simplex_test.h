@@ -33,11 +33,12 @@ int Simplex_test_function(unsigned char length, const double * x, double * outpu
 	return 0;
 }
 
-extern int Simplex_run(int f(unsigned char length, const double * x, double * output), char isNeedMax, double accuracy, double * output);
+extern int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output);
 
 int Simplex_test_teacherFindXMinTest(void) {
+	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
 	double x_answer[2];
-	int error = Simplex_run(Simplex_test_function, 0, 0.1, x_answer);
+	int error = Simplex_run(Simplex_test_function, 2, 0.25, 0, 0.1, x_answer);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
 	if (Test_assertEqualsDouble(L"2. Симплекс не правильно посчитал x0.", 0.483, x_answer[0], 0.001)) return 2;
 	if (Test_assertEqualsDouble(L"3. Симплекс не правильно посчитал x1.", 0.129, x_answer[1], 0.001)) return 3;
@@ -64,6 +65,7 @@ int Simplex_test_functionTeacherTest(void) {
 	return Simplex_test_functioTest(Simplex_test_function);
 }
 
+// Запуск тестирования всего симплекс-метода.
 int Simplex_test_main(void) {
 	if (Test_assertEqualsInt(L"1. Тестируемая функция работает не кооректно", 0, Simplex_test_functionTeacherTest())) return 1;
 	if (Test_assertEqualsInt(L"2. Тест поиска минимума от преподавателя не пройден", 0, Simplex_test_teacherFindXMinTest())) return 2;

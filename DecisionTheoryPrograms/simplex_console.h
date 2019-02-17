@@ -20,6 +20,8 @@ int Simplex_Console_function(unsigned char length, const double * x, double * ou
 int Simplex_Console_fmain(FILE * in, FILE * out) {
 	int isNeedMax = UserInterface_GetChek("0 - необходимо min\n1 - необходимо max", 1);
 	double accuracy = UserInterface_GetDoubleLimit("Необходимая точность симплекса: ", DBL_MIN, DBL_MAX);
+	unsigned char length = UserInterface_GetChek("Сколько переменных в вашей функции?", -2u);
+	double edgeLength = UserInterface_GetDoubleLimit("Длинна ребра: ", DBL_MIN, DBL_MAX);
 	double output = nan(NULL);
 	int error = Simplex_run(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, &output);
 	if (isnan(output))
