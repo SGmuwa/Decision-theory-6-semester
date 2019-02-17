@@ -36,11 +36,12 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		*d = memory + 4 * length,
 		*x_center = memory + 5 * length,
 		*x_mirror = memory + 6 * length;
-	double * x_minmax = NULL; // Это указатель на ту переменную, которая ближе к минимому или максимому.
+	double * x_minmax = NULL; // Это указатель на ту переменную, которая ближе к минимому или максимому. Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
+	double * x_maxmin = NULL; // Это указатель на ту переменную, которая ближе к минимому или максимому. Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
 	if (memory == NULL)
 		return 3;
-	for (unsigned char i = length - 1; i != ~(unsigned char)0; i--) {
-		for (unsigned char ii = length - 1; ii != ~(unsigned char)0; i--) {
+	for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+		for (unsigned char ii = 4 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
 			x[ii][i] = 0.0;
 		}
 		d[i] = 0.0;
@@ -53,55 +54,76 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		nan(NULL), // two
 		nan(NULL) }, // new
 		fvalue_center = nan(NULL),
-		fvalue_minmax = nan(NULL),
-		fE_current = nan(NULL),
-		fE_minmax = nan(NULL),
-		fE_new = nan(NULL);
+		fvalue_minmax = nan(NULL), // Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
+		fvalue_maxmin = nan(NULL), // Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
+		fE[] = { nan(NULL),
+		nan(NULL),
+		nan(NULL) };
 	int ferror = 0;
-	for (unsigned char i = length - 1; i != ~(unsigned char)0; i--)
-		d[i] = (sqrt(length + 1) + pow(length, i) - 1)*edgeLength / (length*sqrt(2));
-	for (unsigned char i = length - 1; i != ~(unsigned char)0; i--) {
+	for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--)
+		d[i] = (sqrt(length + 1) + i * length - 1)*edgeLength / (length*sqrt(2));
+	for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
 		x[1][i] = x[0][i] + d[i];
-		x[2][i] = x[0][i] + d[length - i];
+		x[2][i] = x[0][i] + d[length - i - 1];
 	}
 
 	// Вычисление x_current, x_one, x_two и печать их -----------------------
 	for (unsigned char ii = 0; ii < 3; ii++) {
-		ferror = f(length, x[0], &fvalue[0]);
+		ferror = f(length, x[ii], &(fvalue[ii]));
 		if (ferror != 0) {
 			if (out != NULL)
 				fprintf(out, "error fuction: %d, last value fvalue[%d]: %lf\n", ferror, (int)ii, fvalue[ii]);
 			free(memory);
 			return 4;
 		}
+		if (out != NULL) {
+			fprintf(out, "%zu;\t", k++);
+			for (size_t i = 0; i < length; i++)
+				fprintf(out, "x[%zu]=%0.3lf;\t", i, x[ii][i]);
+			fprintf(out, "f(...)=%0.3lf\n", fvalue[ii]);
+		}
 	}
 	do {
 		// Нам нужен максимум или минимум? ------------------------
 
+		unsigned char maxminIndex = 2;
 		if (isNeedMax)
-			if (fvalue[1] > fvalue[2])
-				x_minmax = x[1];
-			else
-				x_minmax = x[2];
+			for (unsigned char ii = 4 - 3; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] < fvalue[maxminIndex])
+					maxminIndex = ii;
+			}
 		else
-			if (fvalue[1] > fvalue[2])
-				x_minmax = x[2];
-			else
-				x_minmax = x[1];
+			for (unsigned char ii = 4 - 3; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] > fvalue[maxminIndex])
+					maxminIndex = ii;
+			}
+
+		x_maxmin = x[maxminIndex];
+		fvalue_maxmin = fvalue[maxminIndex];
+		if (out != NULL)
+			printf("fvalue_maxmin: %lf\n", fvalue_maxmin);
 
 		// Поиск тяжести и отражённой величины
 
-		for (unsigned char i = length - 1; i != ~(unsigned char)0; i--) {
-			x_center[i] = (x[0][i] + x_minmax[i]) / 2.0;
+		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+			x_center[i] = 0.0;
+			for (unsigned char ii = 4 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if(ii != maxminIndex)
+					x_center[i] += x[ii][i]; // тут надо взять два наименьших (isNeedMax == false) или два наибольших (isNeedMax)
+			}
+			x_center[i] /= 2.0;
 		}
 
-		x_minmax = x_minmax == x[1] ? x[2] : x[1]; // Нам жуно другое, поэтому делаем подмену.
-
-		for (unsigned char i = length - 1; i != ~(unsigned char)0; i--) {
-			x[3][i] = 2 * x_center[i] - x_minmax[i];
+		if (out != NULL) {
+			fprintf(out, "N;\t");
+			for (size_t i = 0; i < length; i++)
+				fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]);
+			fprintf(out, "f_center(...)=not need\n");
 		}
 
-		x_minmax = x_minmax == x[1] ? x[2] : x[1]; // И возвращаем как было.
+		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+			x[3][i] = 2 * x_center[i] - x_maxmin[i];
+		}
 
 		// Печать значения функции x_new -------------------
 
@@ -113,16 +135,21 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			return 4;
 		}
 		if (out != NULL) {
-			fprintf(out, "%ld;\t", k);
+			fprintf(out, "%zu;\t", k++);
 			for (size_t i = 0; i < length; i++)
-				fprintf(out, "x[%d]=%lf;\t", i, x[3][i]);
-			fprintf(out, "f(...)=%lf\n", fvalue[3]);
+				fprintf(out, "x[%zu]=%0.3lf;\t", i, x[3][i]);
+			fprintf(out, "f(...)=%0.3lf\n", fvalue[3]);
 		}
 
 		// Проверка, можем ли закончить алгоритм.
 
-		for (unsigned char i = length - 1; i != ~(unsigned char)0; i--) {
-			x_center[i] = (x[0][i] + x_minmax[i] + x[3][i]) / 3.0;
+		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+			x_center[i] = 0.0;
+			for (unsigned char ii = 4 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (ii != maxminIndex)
+					x_center[i] += x[ii][i]; // Надо пропустить наибольший, если isNeedMax == false.
+			}
+			x_center[i] /= 3.0;
 		}
 		ferror = f(length, x_center, &fvalue_center);
 		if (ferror != 0) {
@@ -131,47 +158,69 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			free(memory);
 			return 4;
 		}
-		fvalue_minmax = nan(NULL);
-		for(unsigned char ii = 4 - 1; ii != ~(unsigned char)0; ii--)
-			if (x_minmax == x[ii]) {
-				fvalue_minmax = fvalue[ii];
-				break;
-			}
-		if (isnan(fvalue_minmax)) {
-			free(memory);
-			return 5;
+		if (out != NULL) {
+			fprintf(out, "N;\t");
+			for (size_t i = 0; i < length; i++)
+				fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]);
+			fprintf(out, "f_center(...)=%0.3lf\n", fvalue_center);
 		}
 
-		fE_current = fabs(fvalue[0] - fvalue_center);
-		fE_minmax = fabs(fvalue_minmax - fvalue_center);
-		fE_new = fabs(fvalue[3] - fvalue_center);
+		unsigned char minmaxIndex = 3;
+		if (isNeedMax)
+			for (unsigned char ii = 4 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] > fvalue[minmaxIndex])
+					minmaxIndex = ii;
+			}
+		else
+			for (unsigned char ii = 4 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] > fvalue[minmaxIndex])
+					minmaxIndex = ii;
+			}
+		x_minmax = x[minmaxIndex];
+		fvalue_minmax = fvalue[minmaxIndex];
+
+		for (unsigned char ii = 4 - 1, i = 0; ii != (unsigned char)~(unsigned char)0; ii--) {
+			if (ii != maxminIndex) // Надо пропустить наибольший, если isNeedMax == false.
+				fE[i++] = fabs(fvalue[ii] - fvalue_center);
+		}
+		if (out != NULL) {
+			printf("E[0]=%0.3lf\tE[1]=%0.3lf\tE[2]=%0.3lf\n", fE[0], fE[1], fE[2]);
+		}
 
 		// Готовим новый симплекс на тот случай, если не подходит ------
-
-		k++;
 
 		// isNeedMax == True => надо отбросить самый маленький.
 		// isNeedMax == False => надо отбросить самый максимальный.
 
-		unsigned char minmaxIndex = 3;
-		if (isNeedMax)
-			for (unsigned char ii = 4 - 2; ii != ~(unsigned char)0; ii--) {
-				if (fvalue[ii] < fvalue[minmaxIndex])
-					minmaxIndex = ii;
+		unsigned char needDeleteIndex = 3;
+		if (isNeedMax) {
+			for (unsigned char ii = 4 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] < fvalue[needDeleteIndex])
+					needDeleteIndex = ii;
 			}
+		}
 		else
-			for (unsigned char ii = 4 - 2; ii != ~(unsigned char)0; ii--) {
-				if (fvalue[ii] > fvalue[minmaxIndex])
-					minmaxIndex = ii;
+			for (unsigned char ii = 4 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+				if (fvalue[ii] > fvalue[needDeleteIndex])
+					needDeleteIndex = ii;
 			}
+
+		if (out != NULL)
+			printf("delete f = %0.3lf\t", fvalue[needDeleteIndex]);
 
 		for (unsigned char ii = 0, i = 0; ii < 3; ii++) {
-			if (i == minmaxIndex)
+			if (i == needDeleteIndex)
 				i++;
-			x[ii] = x[i++];
+			fvalue[ii] = fvalue[i];
+			for(unsigned char j = length - 1; j != (unsigned char)~(unsigned char)0; j--)
+				x[ii][j] = x[i][j];
+			i++;
 		}
 
-	} while (fE_current >= accuracy && fE_minmax >= accuracy && fE_new >= accuracy);
+		if (out != NULL)
+			printf("f[0]=%0.3lf\tf[1]=%0.3lf\tf[2]=%0.3lf\n", fvalue[0], fvalue[1], fvalue[2]);
+
+	} while (fE[0] >= accuracy || fE[1] >= accuracy || fE[2] >= accuracy);
 	// Запись ответа
 	for (unsigned char i = 0; i < length; i++) {
 		output[i] = x[3][i];

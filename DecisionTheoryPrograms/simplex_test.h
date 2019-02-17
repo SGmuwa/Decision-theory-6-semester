@@ -38,7 +38,7 @@ extern int Simplex_run(int f(unsigned char length, const double * x, double * ou
 int Simplex_test_teacherFindXMinTest(void) {
 	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
 	double x_answer[2];
-	int error = Simplex_run(Simplex_test_function, 2, 0.25, 0, 0.1, x_answer);
+	int error = Simplex_runPrint(Simplex_test_function, 2, 0.25, 0, 0.1, x_answer, stdout);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
 	if (Test_assertEqualsDouble(L"2. Симплекс не правильно посчитал x0.", 0.483, x_answer[0], 0.001)) return 2;
 	if (Test_assertEqualsDouble(L"3. Симплекс не правильно посчитал x1.", 0.129, x_answer[1], 0.001)) return 3;
