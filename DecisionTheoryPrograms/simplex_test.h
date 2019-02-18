@@ -33,7 +33,7 @@ int Simplex_test_function(unsigned char length, const double * x, double * outpu
 	return 0;
 }
 
-int Simplex_test_function1(unsigned char length, const double * x, double * output) {
+int Simplex_test_function0(unsigned char length, const double * x, double * output) {
 	if (length != 2)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
 	*output = x[0] * 11.0 / 5.0 + x[1] * x[1] * 11.0 / 5.0 + x[0] * x[0] * 23.0 / 10.0 - 11.0 / 5.0;
 	return 0;
@@ -62,9 +62,9 @@ int Simplex_test_studentsFindXMinTest(void) {
 	int error = 0;
 	start[0] = 1.0; start[1] = 1.0;
 	printf("1. -------\n");
-	error = Simplex_runPrint(Simplex_test_function1, 2, m, 0, E, x_answer, start, stdout);
+	error = Simplex_runPrint(Simplex_test_function0, 2, m, 0, E, x_answer, start, stdout);
 	if (Test_assertEqualsInt(L"1.1. Во время симплекса произошла ошибка.", 0, error)) return 1;
-	Simplex_test_function1(3, x_answer, &f);
+	Simplex_test_function0(3, x_answer, &f);
 	if (Test_assertEqualsDouble(L"1.2. Ответ не верен.", -627.0 / 230.0, f, E/100.0)) return 2;
 	return 0;
 }
