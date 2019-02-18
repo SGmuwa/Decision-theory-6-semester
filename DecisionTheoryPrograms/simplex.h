@@ -26,7 +26,7 @@ FILE * out: Указатель, куда надо отправлять инфо�
 4 - Ошибка при вызове функции.
 5 - Ошибка при поиске fvalue_minmax.
 */
-int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, FILE * out) {
+int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, FILE * out) {
 	if (f == NULL || output == NULL)
 		return 2;
 	if (length > 250)
@@ -95,9 +95,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	int ferror = 0;
 	for (unsigned char i = 0; i < 2; i++)
 		d[i] = (sqrt(length + 1) + i * length - 1)*edgeLength / (length*sqrt(2));
-	for(unsigned char ii = 1; ii < length + 1; ii++)
-		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
-			if (i == ii)
+	for(unsigned char ii = 1; ii < length + 1; ii++) // Перебор векторов x_one, x_two
+		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) { // Перебор координат вектора
+			if (i == ii - 1)
 				x[ii][i] = x[0][i] + d[0];
 			else
 				x[ii][i] = x[0][i] + d[1];
@@ -270,7 +270,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 		if (out != NULL) {
 			for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
-				printf("f[%d]=%0.3lf\t", fvalue[ii]);
+				fprintf(out, "f[%d]=%0.3lf\t", ii, fvalue[ii]);
 			}
 			fprintf(out, "\n");
 		}
@@ -285,7 +285,11 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	for (unsigned char i = 0; i < length; i++) {
 		output[i] = x[3][i];
 	}
+	for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
+		free(x[jj]);
 	free(memory1);
+	free(memory2);
+	free(memory3);
 	return 0;
 }
 
