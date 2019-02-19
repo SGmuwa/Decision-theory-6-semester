@@ -129,6 +129,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		// Нам нужен максимум или минимум? ------------------------
 
 		unsigned char maxminIndex = 2;
+
 		// Последнего элемента у нас нет. Предположим, что максимальным (isNeedMax == false) является x_two
 		if (isNeedMax)
 			// length + 2: размер массива
@@ -291,6 +292,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		}
 
 	} while (need_continue);
+
 	// Запись ответа
 	for (unsigned char i = 0; i < length; i++) {
 		output[i] = x[3][i];

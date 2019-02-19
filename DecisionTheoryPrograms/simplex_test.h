@@ -46,7 +46,14 @@ int Simplex_test_function60(unsigned char length, const double * x, double * out
 	return 0;
 }
 
-
+int Simplex_test_function50(unsigned char length, const double * x, double * output) {
+	if (length < 2 || length > 3)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
+	// 1 0 0,1 2 0,25 0,0 0 0 0,51096 0,516373 0,115625 0,17032 -0,279711 -0,0932371 -0,285123 -0,22682 -0,449209 -0,376556
+	*output = x[0] * 13.0 / 10.0 + x[1] * 13.0 / 10.0 + x[0] * x[0] * 19.0 / 10.0 + x[1] * x[1] * 9.0 / 5.0
+		+ (length == 2 ? 0 : (
+			x[2] * x[2] * 13.0 / 5.0));
+	return 0;
+}
 
 extern int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start);
 
@@ -78,6 +85,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 	};
 	struct paramsOfTests param[] = {
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, Simplex_test_function50},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60} };
 	wchar_t buffer[256];
 	for (unsigned i = 0; i < sizeof(param)/sizeof(struct paramsOfTests); i++) {

@@ -22,7 +22,7 @@ int Simplex_Console_fmain(FILE * in, FILE * out) {
 	double accuracy = UserInterface_GetDoubleLimit("Необходимая точность симплекса: ", DBL_MIN, DBL_MAX);
 	unsigned char length = UserInterface_GetChek("Сколько переменных в вашей функции?", 254u);
 	double edgeLength = UserInterface_GetDoubleLimit("Длинна ребра: ", DBL_MIN, DBL_MAX);
-	double * start = (double *)malloc(length * sizeof(double));
+	double * start = (double *)malloc(2 * length * sizeof(double));
 	if (start == NULL) {
 		printf("Simplex_Console_fmain:malloc error.");
 		return 1;
@@ -36,13 +36,17 @@ int Simplex_Console_fmain(FILE * in, FILE * out) {
 #endif
 		start[i] = UserInterface_GetDoubleLimit(buffer, -DBL_MAX, DBL_MAX);
 	}
-	double output = nan(NULL);
-	int error = Simplex_run(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, &output, start);
-	free(start);
-	if (isnan(output))
+	double * output = start + length;
+	int error = Simplex_run(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, output, start);
+	if (error != 0)
 		wprintf(L"Произошла ошибка симплекса: %d\n", error);
-	else
-		wprintf(L"Расчёт симплекса: %lf\n", output);
+	else {
+		wprintf(L"Расчёт симплекса:\n");
+		for (unsigned char i = 0; i < length; i++)
+			wprintf(L"x[%d]=%lf\t", i, output[i]);
+		wprintf(L"\n");
+	}
+	free(start);
 	return error;
 }
 
