@@ -18,15 +18,12 @@ output: указатель, куда надо записать значение 
 */
 int Simplex_test_functionTeacher(unsigned char length, const double * x, double * output) {
 	if (length != 2) {
-		printf("simplex_test_function: length = %d\n", length);
 		return 1;
 	}
 	if (x == NULL) {
-		printf("simplex_test_function: x is null\n");
 		return 2;
 	}
 	if (output == NULL) {
-		printf("simplex_test_function: output is NULL\n");
 		return 3;
 	}
 	*output = x[0] * x[0] - x[0] * x[1] + 3 * x[1] * x[1] - x[0];
@@ -51,18 +48,18 @@ int Simplex_test_function60(unsigned char length, const double * x, double * out
 
 extern int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start);
 
-int Simplex_test_teacherFindXMinTest(void) {
+int Simplex_test_teacherFindXMinTest(FILE * out) {
 	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
 	double x_answer[2];
 	double start[] = { 0.0, 0.0 };
-	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, stdout);
+	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, out);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
 	if (Test_assertEqualsDouble(L"2. Симплекс не правильно посчитал x0.", 0.483, x_answer[0], 0.001)) return 2;
 	if (Test_assertEqualsDouble(L"3. Симплекс не правильно посчитал x1.", 0.129, x_answer[1], 0.001)) return 3;
 	return 0;
 }
 
-int Simplex_test_studentsFindXMinTest(void) {
+int Simplex_test_studentsFindXMinTest(FILE * out) {
 	// https://drive.google.com/drive/folders/1jfJSP_ob3i55cCLQ8aHz47avZ9fDo0YN
 	double x[3] = {nan(NULL), nan(NULL), nan(NULL)}; // Сюда записывается ответ.
 	double f;
@@ -71,15 +68,15 @@ int Simplex_test_studentsFindXMinTest(void) {
 	double E = 0.1; // Точность.
 	int error = 0;
 	start[0] = 1.0; start[1] = 1.0;
-	printf("0. -------\n");
-	error = Simplex_runPrint(Simplex_test_function0, 2, m, 0, E, x, start, stdout);
+	fprintf(out, "0. -------\n");
+	error = Simplex_runPrint(Simplex_test_function0, 2, m, 0, E, x, start, out);
 	if (Test_assertEqualsInt(L"0.1. Во время симплекса произошла ошибка.", 0, error)) return 1;
 	if (Test_assertEqualsDouble(L"0.2. Первая координата не верна.", -11.0 / 23.0, x[0], 2*E)) return 1;
 	if (Test_assertEqualsDouble(L"0.3. Вторая координата не верна.", 0, x[1], 2*E)) return 1;
 	Simplex_test_function0(2, x, &f);
 	if (Test_assertEqualsDouble(L"0.4. Значение функции не верно.", -627.0 / 230.0, f, E)) return 1;
-	printf("60. -------\n");
-	error = Simplex_runPrint(Simplex_test_function60, 2, m, 0, E, x, start, stdout);
+	fprintf(out, "60. -------\n");
+	error = Simplex_runPrint(Simplex_test_function60, 2, m, 0, E, x, start, out);
 	if (Test_assertEqualsInt(L"60.1. Во время симплекса произошла ошибка.", 0, error)) return 61;
 	if (Test_assertEqualsDouble(L"60.2. Первая координата не верна.", 0, x[0], 2*E)) return 61;
 	if (Test_assertEqualsDouble(L"60.3. Вторая координата не верна.", 0.75, x[1], 2*E)) return 61;
@@ -110,8 +107,32 @@ int Simplex_test_functionTeacherTest(void) {
 
 // Запуск тестирования всего симплекс-метода.
 int Simplex_test_main(void) {
-	if (Test_assertEqualsInt(L"1. Тестируемая функция работает не кооректно", 0, Simplex_test_functionTeacherTest())) return 1;
-	if (Test_assertEqualsInt(L"2. Тест поиска минимума от преподавателя не пройден", 0, Simplex_test_teacherFindXMinTest())) return 2;
-	if (Test_assertEqualsInt(L"3. Тест поиска минимума для студентов не пройден", 0, Simplex_test_studentsFindXMinTest())) return 3;
-	return 0;
+	int error = 0;
+	FILE * testFp = NULL;
+#ifdef _MSC_VER
+	fopen_s(&testFp, "test.log", "w+");
+#else
+	testFp = fopen("test.log", "w+");
+#endif
+	if (testFp == NULL)
+		testFp = stdout;
+
+	if (error == 0 && Test_assertEqualsInt(L"1. Тестируемая функция работает не кооректно", 0, Simplex_test_functionTeacherTest())) error = 1;
+	if (error == 0 && Test_assertEqualsInt(L"2. Тест поиска минимума от преподавателя не пройден", 0, Simplex_test_teacherFindXMinTest(testFp))) error = 2;
+	if (error == 0 && Test_assertEqualsInt(L"3. Тест поиска минимума для студентов не пройден", 0, Simplex_test_studentsFindXMinTest(testFp))) error = 3;
+
+	if (error != 0 && testFp != stdout)
+	{
+		fseek(testFp, 0, SEEK_SET);
+		char buffer;
+		while (!feof(testFp)) {
+			fread(&buffer, sizeof(char), 1, testFp);
+			printf("%c", buffer);
+		}
+	}
+	if (testFp != stdout)
+	{
+		fclose(testFp);
+	}
+	return error;
 }

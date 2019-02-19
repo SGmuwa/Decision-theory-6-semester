@@ -147,7 +147,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		x_maxmin = x[maxminIndex];
 		fvalue_maxmin = fvalue[maxminIndex];
 		if (out != NULL)
-			printf("fvalue_maxmin: %lf\n", fvalue_maxmin);
+			fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
 
 		// Поиск тяжести и отражённой величины
 
@@ -258,7 +258,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			}
 
 		if (out != NULL)
-			printf("delete f = %0.3lf\t", fvalue[needDeleteIndex]);
+			fprintf(out, "delete f = %0.3lf\t", fvalue[needDeleteIndex]);
 
 		if (needDeleteIndex == length + 1) {
 			for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
