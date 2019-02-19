@@ -46,6 +46,8 @@ int Simplex_test_function60(unsigned char length, const double * x, double * out
 	return 0;
 }
 
+
+
 extern int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start);
 
 int Simplex_test_teacherFindXMinTest(FILE * out) {
@@ -63,25 +65,59 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 	// https://drive.google.com/drive/folders/1jfJSP_ob3i55cCLQ8aHz47avZ9fDo0YN
 	double x[3] = {nan(NULL), nan(NULL), nan(NULL)}; // Сюда записывается ответ.
 	double f;
-	double start[3]; // Начальный x.
-	double m = 0.25; // Длинна ребра.
-	double E = 0.1; // Точность.
 	int error = 0;
-	start[0] = 1.0; start[1] = 1.0;
-	fprintf(out, "0. -------\n");
-	error = Simplex_runPrint(Simplex_test_function0, 2, m, 0, E, x, start, out);
-	if (Test_assertEqualsInt(L"0.1. Во время симплекса произошла ошибка.", 0, error)) return 1;
-	if (Test_assertEqualsDouble(L"0.2. Первая координата не верна.", -11.0 / 23.0, x[0], 2*E)) return 1;
-	if (Test_assertEqualsDouble(L"0.3. Вторая координата не верна.", 0, x[1], 2*E)) return 1;
-	Simplex_test_function0(2, x, &f);
-	if (Test_assertEqualsDouble(L"0.4. Значение функции не верно.", -627.0 / 230.0, f, E)) return 1;
-	fprintf(out, "60. -------\n");
-	error = Simplex_runPrint(Simplex_test_function60, 2, m, 0, E, x, start, out);
-	if (Test_assertEqualsInt(L"60.1. Во время симплекса произошла ошибка.", 0, error)) return 61;
-	if (Test_assertEqualsDouble(L"60.2. Первая координата не верна.", 0, x[0], 2*E)) return 61;
-	if (Test_assertEqualsDouble(L"60.3. Вторая координата не верна.", 0.75, x[1], 2*E)) return 61;
-	Simplex_test_function60(2, x, &f);
-	if (Test_assertEqualsDouble(L"0.4. Значение функции не верно.", -63.0 / 80.0, f, E)) return 61;
+	struct paramsOfTests {
+		double start[3]; // Начальный x.
+		double m; // Длинна ребра.
+		double E; // Точность.
+		unsigned char length; // Количество переменных.
+		unsigned char isNeedMax; // Нужно найти максимум функции?
+		double answer[3]; // Правильный ответ.
+		double fanswer; // Правильное значение функции.
+		int(*function)(unsigned char length, const double * x, double * output); // Функция, которую надо проверить.
+	};
+	struct paramsOfTests param[] = {
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60} };
+	wchar_t buffer[256];
+	for (unsigned i = 0; i < sizeof(param)/sizeof(struct paramsOfTests); i++) {
+		fprintf(out, "%u. -------\n", i);
+
+		error = Simplex_runPrint(param[i].function, param[i].length, param[i].m, param[i].isNeedMax, param[i].E, x, param[i].start, out);
+#ifdef _MSC_VER
+		swprintf_s(buffer, sizeof(buffer)/sizeof(wchar_t),
+#else
+		swprintf(buffer,
+#endif // _MSC_VER
+			L"%u.1. Во время симплекса произошла ошибка.", i);
+		if (Test_assertEqualsInt(buffer, 0, error)) return i;
+
+
+		for (unsigned ii = 0; ii < param[i].length; ii++) {
+#ifdef _MSC_VER
+			swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
+#else
+			swprintf(buffer, 
+#endif // _MSC_VER
+				L"%u.2. Координата %u не верна.", i, ii);
+			if (Test_assertEqualsDouble(buffer, param[i].answer[ii], x[ii], 2 * param[i].E)) return i;
+		}
+#ifdef _MSC_VER
+		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
+#else
+		swprintf(buffer,
+#endif // _MSC_VER
+			L"%u.3. Функция оказалась не вычисляема.", i);
+		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f))) return i;
+
+#ifdef _MSC_VER
+		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
+#else
+		swprintf(buffer,
+#endif // _MSC_VER
+			L"%u.4. Значение функции не верно.", i);
+		if (Test_assertEqualsDouble(buffer, param[i].fanswer, f, param[i].E)) return i;
+	}
 	return 0;
 }
 
@@ -123,11 +159,23 @@ int Simplex_test_main(void) {
 
 	if (error != 0 && testFp != stdout)
 	{
+		size_t size = ftell(testFp) + 1;
 		fseek(testFp, 0, SEEK_SET);
-		char buffer;
-		while (!feof(testFp)) {
-			fread(&buffer, sizeof(char), 1, testFp);
-			printf("%c", buffer);
+		char * buffer = malloc(size);
+		if (buffer == NULL)
+		{
+			while (!feof(testFp))
+			{
+				fread(&buffer, sizeof(char), 1, testFp);
+				printf("%c", (char)buffer);
+			}
+		}
+		else
+		{
+			size = fread(buffer, sizeof(char), size, testFp);
+			buffer[size] = 0;
+			printf("%s", buffer);
+			free(buffer);
 		}
 	}
 	if (testFp != stdout)
