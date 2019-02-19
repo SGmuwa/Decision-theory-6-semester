@@ -25,6 +25,7 @@ FILE * out: Указатель, куда надо отправлять инфо�
 3 - Нехватка памяти для вычислений.
 4 - Ошибка при вызове функции.
 5 - Ошибка при поиске fvalue_minmax.
+6 - Обнаружен бесконечный цикл. Попробуйте увеличить точность или уменьшить длинну ребра.
 */
 int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, FILE * out) {
 	if (f == NULL || output == NULL)
@@ -243,7 +244,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		// isNeedMax == True => надо отбросить самый маленький.
 		// isNeedMax == False => надо отбросить самый максимальный.
 
-		unsigned char needDeleteIndex = 3;
+		unsigned char needDeleteIndex = length + 1;
 		if (isNeedMax) {
 			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
 				if (fvalue[ii] < fvalue[needDeleteIndex])
@@ -258,6 +259,15 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 		if (out != NULL)
 			printf("delete f = %0.3lf\t", fvalue[needDeleteIndex]);
+
+		if (needDeleteIndex == length + 1) {
+			for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
+				free(x[jj]);
+			free(memory1);
+			free(memory2);
+			free(memory3);
+			return 6;
+		}
 
 		for (unsigned char ii = 0, i = 0; ii < length + 2 - 1; ii++) {
 			if (i == needDeleteIndex)
