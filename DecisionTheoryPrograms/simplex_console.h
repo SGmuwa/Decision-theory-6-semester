@@ -37,7 +37,7 @@ int Simplex_Console_fmain(FILE * in, FILE * out) {
 		start[i] = UserInterface_GetDoubleLimit(buffer, -DBL_MAX, DBL_MAX);
 	}
 	double * output = start + length;
-	int error = Simplex_run(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, output, start);
+	int error = Simplex_runPrint(Simplex_Console_function, length, edgeLength, isNeedMax, accuracy, output, start, out);
 	if (error != 0)
 		wprintf(L"Произошла ошибка симплекса: %d\n", error);
 	else {
