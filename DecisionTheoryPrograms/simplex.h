@@ -10,6 +10,7 @@ int f(: Функция, которую надо исследовать.
 unsigned char length: Количество измерений аргумента x функции.
 const double * x: Указатель на первое измерение аргумента функции.
 double * output: Указатель, куда надо записать результат функции.
+void * contextFunction: Указатель на контекст функции. Будет отправлено в функцию.
 Возвращает: Код ошибки.
 )
 unsigned char length: Количество измерений в аргументе функции.
@@ -19,6 +20,7 @@ double accuracy: Заданная точность ответа.
 double * output: Указатель, куда записать аргумент-вектор минимума или максимума.
 const double * start: Указатель на начальный вектор.
 FILE * out: Указатель, куда надо отправлять информацию об отладке. Укажите NULL, чтобы ничего не отправлять.
+void * contextFunction: Указатель на контекст функции. Он будет передан функции.
 Возвращает: код ошибки.
 1 - Функция не реализована.
 2 - Либо f либо output отправлены NULL.
@@ -27,7 +29,7 @@ FILE * out: Указатель, куда надо отправлять инфо�
 5 - Ошибка при поиске fvalue_minmax.
 6 - Обнаружен бесконечный цикл. Попробуйте увеличить точность или уменьшить длинну ребра.
 */
-int Simplex_runPrint(int f(unsigned char length, const double * x, double * output), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, FILE * out) {
+int Simplex_runPrint(int f(unsigned char length, const double * x, double * output, void * contextFunction), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, void * contextFunction, FILE * out) {
 	if (f == NULL || output == NULL)
 		return 2;
 	if (length > 250)
@@ -106,7 +108,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 	// Вычисление x_current, x_one, x_two и печать их -----------------------
 	for (unsigned char ii = 0; ii < length + 1; ii++) {
-		ferror = f(length, x[ii], &(fvalue[ii]));
+		ferror = f(length, x[ii], &(fvalue[ii]), contextFunction);
 		if (ferror != 0) {
 			if (out != NULL)
 				fprintf(out, "error fuction: %d, last value fvalue[%d]: %lf\n", ferror, (int)ii, fvalue[ii]);
@@ -174,7 +176,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 		// Печать значения функции x_new -------------------
 
-		ferror = f(length, x[length + 2 - 1], &fvalue[length + 2 - 1]);
+		ferror = f(length, x[length + 2 - 1], &fvalue[length + 2 - 1], contextFunction);
 		if (ferror != 0) {
 			if (out != NULL)
 				fprintf(out, "error fuction: %d, last value fvalue[%d]: %lf\n", ferror, length + 2 - 1, fvalue[length + 2 - 1]);
@@ -202,7 +204,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			}
 			x_center[i] /= length + 1;
 		}
-		ferror = f(length, x_center, &fvalue_center);
+		ferror = f(length, x_center, &fvalue_center, contextFunction);
 		if (ferror != 0) {
 			if (out != NULL)
 				fprintf(out, "error fuction: %d, last value fvalue_center: %lf\n", ferror, fvalue_center);
@@ -306,9 +308,30 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 }
 
 /*
+Вычисление максимума или минимума заданной функции.
+int f(: Функция, которую надо исследовать.
+unsigned char length: Количество измерений аргумента x функции.
+const double * x: Указатель на первое измерение аргумента функции.
+double * output: Указатель, куда надо записать результат функции.
+void * contextFunction: Указатель на контекст функции. Будет отправлено в функцию.
+Возвращает: Код ошибки.
+)
+unsigned char length: Количество измерений в аргументе функции.
+double edgeLength: Длинна ребра симплекс-метода.
+char isNeedMax: Поставьте true, если надо искать максимум. Иначе - false.
+double accuracy: Заданная точность ответа.
+double * output: Указатель, куда записать аргумент-вектор минимума или максимума.
+const double * start: Указатель на начальный вектор.
+FILE * out: Указатель, куда надо отправлять информацию об отладке. Укажите NULL, чтобы ничего не отправлять.
+void * contextFunction: Указатель на контекст функции. Он будет передан функции.
 Возвращает: код ошибки.
 1 - Функция не реализована.
+2 - Либо f либо output отправлены NULL.
+3 - Нехватка памяти для вычислений.
+4 - Ошибка при вызове функции.
+5 - Ошибка при поиске fvalue_minmax.
+6 - Обнаружен бесконечный цикл. Попробуйте увеличить точность или уменьшить длинну ребра.
 */
-int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start) {
-	return Simplex_runPrint(f, length, edgeLength, isNeedMax, accuracy, output, start, NULL);
+int Simplex_run(int f(unsigned char length, const double * x, double * output, void * contextFunction), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start) {
+	return Simplex_runPrint(f, length, edgeLength, isNeedMax, accuracy, output, start, NULL, NULL);
 }
