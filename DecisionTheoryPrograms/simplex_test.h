@@ -16,7 +16,7 @@ output: указатель, куда надо записать значение 
 2 - x отправлен NULL.
 3 - output отправлен NULL.
 */
-int Simplex_test_functionTeacher(unsigned char length, const double * x, double * output) {
+int Simplex_test_functionTeacher(unsigned char length, const double * x, double * output, void * context) {
 	if (length != 2) {
 		return 1;
 	}
@@ -30,7 +30,7 @@ int Simplex_test_functionTeacher(unsigned char length, const double * x, double 
 	return 0;
 }
 
-int Simplex_test_function0(unsigned char length, const double * x, double * output) {
+int Simplex_test_function0(unsigned char length, const double * x, double * output, void * context) {
 	if (length < 2 || length > 3)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
 	*output = x[0] * 11.0 / 5.0 + x[1] * x[1] * 11.0 / 5.0 + x[0] * x[0] * 23.0 / 10.0 - 11.0 / 5.0
 		+ (length == 2 ? 0 : (
@@ -38,7 +38,7 @@ int Simplex_test_function0(unsigned char length, const double * x, double * outp
 	return 0;
 }
 
-int Simplex_test_function60(unsigned char length, const double * x, double * output) {
+int Simplex_test_function60(unsigned char length, const double * x, double * output, void * context) {
 	if (length < 2 || length > 3)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
 	*output = x[0] * x[0] * 13.0 / 5.0 + x[1] * x[1] * 7.0 / 5.0
 		+ (length == 2 ? -x[1] * 21.0 / 10.0 : (
@@ -46,7 +46,7 @@ int Simplex_test_function60(unsigned char length, const double * x, double * out
 	return 0;
 }
 
-int Simplex_test_function50(unsigned char length, const double * x, double * output) {
+int Simplex_test_function50(unsigned char length, const double * x, double * output, void * context) {
 	if (length < 2 || length > 3)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
 	// 1 0 0,1 2 0,25 0,0 0 0 0,51096 0,516373 0,115625 0,17032 -0,279711 -0,0932371 -0,285123 -0,22682 -0,449209 -0,376556
 	*output = x[0] * 13.0 / 10.0 + x[1] * 13.0 / 10.0 + x[0] * x[0] * 19.0 / 10.0 + x[1] * x[1] * 9.0 / 5.0
@@ -55,13 +55,11 @@ int Simplex_test_function50(unsigned char length, const double * x, double * out
 	return 0;
 }
 
-extern int Simplex_run(int f(unsigned char length, const double * x, double * output), unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start);
-
 int Simplex_test_teacherFindXMinTest(FILE * out) {
 	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
 	double x_answer[2];
 	double start[] = { 0.0, 0.0 };
-	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, out);
+	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, NULL, out);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
 	if (Test_assertEqualsDouble(L"2. Симплекс не правильно посчитал x0.", 0.483, x_answer[0], 0.001)) return 2;
 	if (Test_assertEqualsDouble(L"3. Симплекс не правильно посчитал x1.", 0.129, x_answer[1], 0.001)) return 3;
@@ -81,7 +79,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		unsigned char isNeedMax; // Нужно найти максимум функции?
 		double answer[3]; // Правильный ответ.
 		double fanswer; // Правильное значение функции.
-		int(*function)(unsigned char length, const double * x, double * output); // Функция, которую надо проверить.
+		int(*function)(unsigned char length, const double * x, double * output, void * context); // Функция, которую надо проверить.
 	};
 	struct paramsOfTests param[] = {
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
@@ -91,7 +89,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 	for (unsigned i = 0; i < sizeof(param)/sizeof(struct paramsOfTests); i++) {
 		fprintf(out, "%u. -------\n", i);
 
-		error = Simplex_runPrint(param[i].function, param[i].length, param[i].m, param[i].isNeedMax, param[i].E, x, param[i].start, out);
+		error = Simplex_runPrint(param[i].function, param[i].length, param[i].m, param[i].isNeedMax, param[i].E, x, param[i].start, NULL, out);
 #ifdef _MSC_VER
 		swprintf_s(buffer, sizeof(buffer)/sizeof(wchar_t),
 #else
@@ -116,7 +114,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		swprintf(buffer,
 #endif // _MSC_VER
 			L"%u.3. Функция оказалась не вычисляема.", i);
-		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f))) return i;
+		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i;
 
 #ifdef _MSC_VER
 		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
