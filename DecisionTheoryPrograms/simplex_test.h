@@ -79,53 +79,56 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		unsigned char isNeedMax; // Нужно найти максимум функции?
 		double answer[3]; // Правильный ответ.
 		double fanswer; // Правильное значение функции.
+		int error; // Какой код ошибки ожидается? В случае, если указать не 0, то ответы не будут сравниваться.
 		int(*function)(unsigned char length, const double * x, double * output, void * context); // Функция, которую надо проверить.
 	};
 	struct paramsOfTests param[] = {
-		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
-		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, Simplex_test_function50},
-		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60},
-		{{100, 100, 100}, 0.25, 0.1, 3, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60}
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, 0, Simplex_test_function0},
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, 0, Simplex_test_function50},
+		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 0, Simplex_test_function60},
+		{{1, 1, 1}, 0.25, 0.1, 3, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 6, Simplex_test_function60}
 	};
 	wchar_t buffer[256];
-	for (unsigned i = 0; i < sizeof(param)/sizeof(struct paramsOfTests); i++) {
+	for (unsigned i = 0; i < sizeof(param) / sizeof(struct paramsOfTests); i++) {
 		fprintf(out, "%u. -------\n", i);
 
 		error = Simplex_runPrint(param[i].function, param[i].length, param[i].m, param[i].isNeedMax, param[i].E, x, param[i].start, NULL, out);
 #ifdef _MSC_VER
-		swprintf_s(buffer, sizeof(buffer)/sizeof(wchar_t),
+		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
 #else
 		swprintf(buffer,
 #endif // _MSC_VER
 			L"%u.1. Во время симплекса произошла ошибка.", i);
-		if (Test_assertEqualsInt(buffer, 0, error))
+		if (Test_assertEqualsInt(buffer, param[i].error, error))
 			return i + 1;
 
+		if (param[i].error == 0) {
 
-		for (unsigned ii = 0; ii < param[i].length; ii++) {
+			for (unsigned ii = 0; ii < param[i].length; ii++) {
+#ifdef _MSC_VER
+				swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
+#else
+				swprintf(buffer,
+#endif // _MSC_VER
+					L"%u.2. Координата %u не верна.", i, ii);
+				if (Test_assertEqualsDouble(buffer, param[i].answer[ii], x[ii], 2 * param[i].E)) return i + 1;
+			}
 #ifdef _MSC_VER
 			swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
 #else
-			swprintf(buffer, 
+			swprintf(buffer,
 #endif // _MSC_VER
-				L"%u.2. Координата %u не верна.", i, ii);
-			if (Test_assertEqualsDouble(buffer, param[i].answer[ii], x[ii], 2 * param[i].E)) return i + 1;
-		}
-#ifdef _MSC_VER
-		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
-#else
-		swprintf(buffer,
-#endif // _MSC_VER
-			L"%u.3. Функция оказалась не вычисляема.", i);
-		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i + 1;
+				L"%u.3. Функция оказалась не вычисляема.", i);
+			if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i + 1;
 
 #ifdef _MSC_VER
-		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
+			swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
 #else
-		swprintf(buffer,
+			swprintf(buffer,
 #endif // _MSC_VER
-			L"%u.4. Значение функции не верно.", i);
-		if (Test_assertEqualsDouble(buffer, param[i].fanswer, f, param[i].E)) return i + 1;
+				L"%u.4. Значение функции не верно.", i);
+			if (Test_assertEqualsDouble(buffer, param[i].fanswer, f, param[i].E)) return i + 1;
+		}
 	}
 	return 0;
 }
