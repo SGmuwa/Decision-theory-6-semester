@@ -507,6 +507,22 @@ unsigned UserInterface_GetUnsignedIntLimit(const char * message, unsigned min, u
 	return buffer;
 }
 
+// Получает от пользователя int число в допустимом диапазоне.
+// const char * message: сообщение, которое будет выведено перед запросом.
+// int min: минимально допустимое число, которое будет возвращено. Если min > max, то будет возвращено min без ожидания ответа пользователя и не печатая message.
+// int max: максимально допустимое число, которое будет возвращено.
+// Возвращает: unsigned int от пользователя.
+int UserInterface_GetIntLimit(const char * message, int min, int max)
+{
+	if (min > max) return min;
+	int buffer;
+	do
+	{
+		buffer = UserInterface_GetUnsignedInt(message);
+	} while (buffer < min || buffer > max);
+	return buffer;
+}
+
 // Получает от пользователя unsigned long long int число в допустимом диапазоне.
 // const char * message: сообщение, которое будет выведено перед запросом.
 // unsigned long long min: минимально допустимое число, которое будет возвращено. Если min > max, то будет возвращено min без ожидания ответа пользователя и не печатая message.
