@@ -30,7 +30,7 @@ expr - указатель на функцию-выражение.
 4 - Ошибка с память
 */
 int Simplex_Console_functionParse(unsigned char length, const double * x, double * output, const char * expr) {
-	te_variable * input = (double*)malloc(length * sizeof(te_variable));
+	te_variable * input = (te_variable*)malloc(length * sizeof(te_variable));
 	if (input == NULL) {
 		return 4;
 	}

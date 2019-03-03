@@ -72,7 +72,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	}
 	size_t k = 0;
 	// length = 2 => length0, length1, 1, 2, length0, legth1, 1
-	double * memory3 = (double*)malloc(((length + 2) + (length + 1)) * sizeof(double));
+	double * memory3 = (double*)malloc(((length + 2) + (length + 1) + (length + 1)) * sizeof(double));
 	if (memory3 == NULL) {
 		for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
 			free(x[jj]);
@@ -82,6 +82,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	}
 	double * fvalue = memory3;
 	double * E = memory3 + length + 2;
+	double * fE = memory3 + length + 2 + length + 1;
 	for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~(unsigned char)0; ii--)
 		fvalue[ii] = nan(NULL);
 	for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~(unsigned char)0; ii--)
@@ -90,9 +91,6 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		fvalue_center = nan(NULL),
 		fvalue_minmax = nan(NULL), // Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
 		fvalue_maxmin = nan(NULL), // Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
-		fE[] = { nan(NULL),
-		nan(NULL),
-		nan(NULL), },
 		d[] = { nan(NULL),
 			nan(NULL) };
 	int ferror = 0;
@@ -127,7 +125,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		}
 	}
 	unsigned char need_continue = 0;
+	int debug_iterator = 0;
 	do {
+		debug_iterator++;
 		// Нам нужен максимум или минимум? ------------------------
 
 		unsigned char maxminIndex = 2;
@@ -297,8 +297,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 	// Запись ответа
 	for (unsigned char i = 0; i < length; i++) {
-		output[i] = x[3][i];
+		output[i] = x[length + 2 - 1][i];
 	}
+
 	for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
 		free(x[jj]);
 	free(memory1);

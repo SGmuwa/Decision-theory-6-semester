@@ -57,7 +57,7 @@ int Simplex_test_function50(unsigned char length, const double * x, double * out
 
 int Simplex_test_teacherFindXMinTest(FILE * out) {
 	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
-	double x_answer[2];
+	double x_answer[2] = { nan(NULL), nan(NULL) };
 	double start[] = { 0.0, 0.0 };
 	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, NULL, out);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
@@ -82,9 +82,11 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		int(*function)(unsigned char length, const double * x, double * output, void * context); // Функция, которую надо проверить.
 	};
 	struct paramsOfTests param[] = {
-		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
-		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, Simplex_test_function50},
-		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60} };
+		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, Simplex_test_function0},
+		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, Simplex_test_function50},
+		//{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60},
+		{{100, 100, 100}, 0.25, 0.1, 3, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, Simplex_test_function60}
+	};
 	wchar_t buffer[256];
 	for (unsigned i = 0; i < sizeof(param)/sizeof(struct paramsOfTests); i++) {
 		fprintf(out, "%u. -------\n", i);
@@ -96,7 +98,8 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		swprintf(buffer,
 #endif // _MSC_VER
 			L"%u.1. Во время симплекса произошла ошибка.", i);
-		if (Test_assertEqualsInt(buffer, 0, error)) return i;
+		if (Test_assertEqualsInt(buffer, 0, error))
+			return i + 1;
 
 
 		for (unsigned ii = 0; ii < param[i].length; ii++) {
@@ -106,7 +109,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 			swprintf(buffer, 
 #endif // _MSC_VER
 				L"%u.2. Координата %u не верна.", i, ii);
-			if (Test_assertEqualsDouble(buffer, param[i].answer[ii], x[ii], 2 * param[i].E)) return i;
+			if (Test_assertEqualsDouble(buffer, param[i].answer[ii], x[ii], 2 * param[i].E)) return i + 1;
 		}
 #ifdef _MSC_VER
 		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
@@ -114,7 +117,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		swprintf(buffer,
 #endif // _MSC_VER
 			L"%u.3. Функция оказалась не вычисляема.", i);
-		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i;
+		if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i + 1;
 
 #ifdef _MSC_VER
 		swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
@@ -122,23 +125,23 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		swprintf(buffer,
 #endif // _MSC_VER
 			L"%u.4. Значение функции не верно.", i);
-		if (Test_assertEqualsDouble(buffer, param[i].fanswer, f, param[i].E)) return i;
+		if (Test_assertEqualsDouble(buffer, param[i].fanswer, f, param[i].E)) return i + 1;
 	}
 	return 0;
 }
 
-int Simplex_test_functioTest(int f(unsigned char length, const double * x, double * output)) {
+int Simplex_test_functioTest(int f(unsigned char length, const double * x, double * output, void * context)) {
 	unsigned char length = 1;
 	double x[2];
 	double output = 132.321;
-	if (Test_assertEqualsInt(L"1. Функция не реагирует на ошибку недостаточности количества аргументов", 1, f(length, x, &output))) return 1;
+	if (Test_assertEqualsInt(L"1. Функция не реагирует на ошибку недостаточности количества аргументов", 1, f(length, x, &output, NULL))) return 1;
 	if (Test_assertEqualsDouble(L"2. Во время ошибки всё равно был отправлен результат.", 132.321, output, 0.0)) return 2;
 	length = 2;
 	x[0] = 0; x[1] = 0;
-	if (Test_assertEqualsInt(L"3. У функции какие-то проблемы", 0, f(length, x, &output))) return 3;
+	if (Test_assertEqualsInt(L"3. У функции какие-то проблемы", 0, f(length, x, &output, NULL))) return 3;
 	if (Test_assertEqualsDouble(L"4. Функция считает не правильно.", 0.0, output, 0.0)) return 4;
 	x[0] = 0.483; x[1] = 0.129;
-	if (Test_assertEqualsInt(L"5. У функции какие-то проблемы", 0, f(length, x, &output))) return 5;
+	if (Test_assertEqualsInt(L"5. У функции какие-то проблемы", 0, f(length, x, &output, NULL))) return 5;
 	if (Test_assertEqualsDouble(L"6. Функция считает не правильно.", -0.262, output, 0.001)) return 6;
 	return 0;
 }
