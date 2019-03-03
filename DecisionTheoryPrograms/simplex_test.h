@@ -72,6 +72,9 @@ int Simplex_test_teacherFindXMinTest(FILE * out) {
 	return 0;
 }
 
+/*
+Тестирование для перебора разных функций.
+*/
 int Simplex_test_studentsFindXMinTest(FILE * out) {
 	// https://drive.google.com/drive/folders/1jfJSP_ob3i55cCLQ8aHz47avZ9fDo0YN
 	double x[3] = {nan(NULL), nan(NULL), nan(NULL)}; // Сюда записывается ответ.
