@@ -30,6 +30,12 @@ int Simplex_test_functionTeacher(unsigned char length, const double * x, double 
 	return 0;
 }
 
+int Simplex_test_functionParabola(unsigned char length, const double * x, double * output, void * context) {
+	if (length > 1)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
+	*output = x[0] * x[0];
+	return 0;
+}
+
 int Simplex_test_function0(unsigned char length, const double * x, double * output, void * context) {
 	if (length < 2 || length > 3)  return 1; if (x == NULL) return 2; if (output == NULL) return 3;
 	*output = x[0] * 11.0 / 5.0 + x[1] * x[1] * 11.0 / 5.0 + x[0] * x[0] * 23.0 / 10.0 - 11.0 / 5.0
@@ -83,6 +89,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		int(*function)(unsigned char length, const double * x, double * output, void * context); // Функция, которую надо проверить.
 	};
 	struct paramsOfTests param[] = {
+		{{10, 0, 0}, 0.25, 0.1, 1, 0, {0.0, 0.0, 0.0}, 0.0, 0, Simplex_test_functionParabola},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, 0, Simplex_test_function0},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, 0, Simplex_test_function50},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 0, Simplex_test_function60},

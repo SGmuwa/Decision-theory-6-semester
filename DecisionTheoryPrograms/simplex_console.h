@@ -38,12 +38,14 @@ int Simplex_Console_functionParse(unsigned char length, const double * x, double
 	for (unsigned char i = 0; i < length; i++) {
 		input[i].name = buffer +
 #ifdef _MSC_VER
-			sprintf_s(buffer, sizeof(buffer), "%sx%u", buffer, i)
+			sprintf_s(buffer, sizeof(buffer), "%sx%c", buffer, i + 'a')
 #else
 			sprintf(buffer, "%sx%u_", buffer, i)
 #endif // _MSC_VER
-			- 1 - (i < 10 ? 1 : i < 100 ? 2 : 3);
+			- 1 - 1;
 		input[i].address = x + i;
+		input[i].type = 0;
+		input[i].context = NULL;
 	}
 	for (size_t i = 0; i < sizeof(buffer); i++) {
 		if (buffer[i] == '_')
@@ -51,7 +53,7 @@ int Simplex_Console_functionParse(unsigned char length, const double * x, double
 	}
 #if TEST == 1
 	for (unsigned char i = 0; i < length; i++)
-		printf("TEST Simplex_Console_functionParse: name[%u]=%s.\n", i, input[i].name);
+		printf("TEST Simplex_Console_functionParse: name[%u]=\"%s\".\n", i, input[i].name);
 #endif
 	int err = 0;
 	te_expr *n = te_compile(expr, input, length, &err);
@@ -60,14 +62,14 @@ int Simplex_Console_functionParse(unsigned char length, const double * x, double
 		te_free(n);
 	}
 	free(input);
-	return err;
+	return n == NULL ? err : 0;
 }
 
 int Simplex_Console_fmain(FILE * in, FILE * out) {
-	unsigned char length = UserInterface_GetChek("Сколько переменных в вашей функции?", 254u);
+	unsigned char length = UserInterface_GetChek("Сколько переменных в вашей функции?", 26u);
 	printf("Список переменных: ");
 	for (unsigned char i = 0; i < length; i++) {
-		printf("x%u ", i);
+		printf("\"x%c\" ", i + 'a');
 	}
 	printf("\n");
 	char expr[1024] = { 0 };

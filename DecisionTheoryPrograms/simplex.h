@@ -125,9 +125,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		}
 	}
 	unsigned char need_continue = 0;
-	int debug_iterator = 0;
 	do {
-		debug_iterator++;
 		// Нам нужен максимум или минимум? ------------------------
 
 		unsigned char maxminIndex = 2;
