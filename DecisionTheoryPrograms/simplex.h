@@ -158,7 +158,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 				if(ii != maxminIndex)
 					x_center[i] += x[ii][i]; // тут надо взять два наименьших (isNeedMax == false) или два наибольших (isNeedMax)
 			}
-			x_center[i] /= 2.0;
+			x_center[i] /= length;
 		}
 
 		if (out != NULL) {

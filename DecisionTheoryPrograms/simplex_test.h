@@ -89,7 +89,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		int(*function)(unsigned char length, const double * x, double * output, void * context); // Функция, которую надо проверить.
 	};
 	struct paramsOfTests param[] = {
-		{{10, 0, 0}, 0.25, 0.1, 1, 0, {0.0, 0.0, 0.0}, 0.0, 0, Simplex_test_functionParabola},
+		{{1, 0, 0}, 1, 0.1, 1, 0, {0.0, 0.0, 0.0}, 0.0, 0, Simplex_test_functionParabola},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, 0, Simplex_test_function0},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, 0, Simplex_test_function50},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 0, Simplex_test_function60},
@@ -126,7 +126,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 			swprintf(buffer,
 #endif // _MSC_VER
 				L"%u.3. Функция оказалась не вычисляема.", i);
-			if (Test_assertEqualsInt(buffer, 0, param[i].function(2, x, &f, NULL))) return i + 1;
+			if (Test_assertEqualsInt(buffer, 0, param[i].function(param[i].length, x, &f, NULL))) return i + 1;
 
 #ifdef _MSC_VER
 			swprintf_s(buffer, sizeof(buffer) / sizeof(wchar_t),
