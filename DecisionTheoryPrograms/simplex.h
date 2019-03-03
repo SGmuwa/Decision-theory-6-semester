@@ -128,7 +128,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	do {
 		// Нам нужен максимум или минимум? ------------------------
 
-		unsigned char maxminIndex = 2;
+		unsigned char maxminIndex = length;
 
 		// Последнего элемента у нас нет. Предположим, что максимальным (isNeedMax == false) является x_two
 		if (isNeedMax)
