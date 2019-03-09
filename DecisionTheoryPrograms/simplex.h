@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <corecrt_math.h>
 
+// TODO: Проверить шаг 6
 
 /*
 Вычисление максимума или минимума заданной функции.
@@ -30,6 +31,9 @@ void * contextFunction: Указатель на контекст функции.
 6 - Обнаружен бесконечный цикл. Попробуйте увеличить точность или уменьшить длинну ребра.
 */
 int Simplex_runPrint(int f(unsigned char length, const double * x, double * output, void * contextFunction), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, void * contextFunction, FILE * out) {
+	// Материал взят отсюда: https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit#heading=h.hxufmka5m960
+	// Шаг 1. -----------------------
+
 	if (f == NULL || output == NULL)
 		return 2;
 	if (length > 250)
@@ -94,6 +98,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		d[] = { nan(NULL),
 			nan(NULL) };
 	int ferror = 0;
+
+	// Шаг 2 ---------------------------------------------------------
+	
 	for (unsigned char i = 0; i < 2; i++)
 		d[i] = (sqrt(length + 1) + i * length - 1)*edgeLength / (length*sqrt(2));
 	for(unsigned char ii = 1; ii < length + 1; ii++) // Перебор векторов x_one, x_two
@@ -126,6 +133,8 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	}
 	unsigned char need_continue = 0;
 	do {
+		// Шаг 3 --------------------------------------
+
 		// Нам нужен максимум или минимум? ------------------------
 
 		unsigned char maxminIndex = length;
@@ -150,6 +159,8 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		if (out != NULL)
 			fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
 
+		// Шаг 4. ------------------------------------
+
 		// Поиск тяжести и отражённой величины
 
 		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
@@ -167,6 +178,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 				fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]);
 			fprintf(out, "f_center(...)=not need\n");
 		}
+
+		// Шаг 5. --------------------------------------------------
+
 
 		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
 			x[length + 2 - 1][i] = 2 * x_center[i] - x_maxmin[i]; // Последний элемент.
@@ -192,6 +206,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			fprintf(out, "f(...)=%0.3lf\n", fvalue[length + 2 - 1]);
 		}
 
+		// Шаг 8. Определение центра тяжести. -------------
 		// Проверка, можем ли закончить алгоритм.
 
 		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
