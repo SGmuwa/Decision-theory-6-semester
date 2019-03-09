@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include <corecrt_math.h>
 
+// Освобождение memory1, 2 и 3. Все элементы внутри x.
+#define Simplex_FREEALL for(unsigned char qkfjewigwegiojwegfj = length + 2 - 1; qkfjewigwegiojwegfj != (unsigned char)~0; qkfjewigwegiojwegfj--) free(x[qkfjewigwegiojwegfj]); free(memory1); free(memory2); free(memory3);
+// Вычисление функции f в точке x. Результат помещается по указателю pointerReturn. Если ошибка, то вызывается Simplex_FREEALL и return 4;. Печать ошибки в out если это возможно.
+#define Simplex_CALLFUNCTION(x, pointerReturn) ferror = f(length, x, pointerReturn, contextFunction); if (ferror != 0) { if (out != NULL) fprintf(out, "error fuction: %d, last value: %lf\n", ferror, *pointerReturn); Simplex_FREEALL; return 4; }
+// Печать заголовка, аргументов и значение функции. Всё, что написано в format будет отправлено в printf перед печатью.
+#define Simplex_FUNCTIONPRINT(x, pointerReturn, format) if (out != NULL) { fprintf(out, format); for (size_t jwoiqqf = 0; jwoiqqf < length; jwoiqqf++) fprintf(out, "x[%zu]=%0.3lf;\t", jwoiqqf, x[jwoiqqf]); fprintf(out, "f(...)=%0.3lf\n", *pointerReturn); }
+// Вычисление и печать функции. Вызывает Simplex_CALLFUNCTION, а затем Simplex_FUNCTIONPRINT.
+#define Simplex_CALLFUNCTIONANDPRINT(x, pointerReturn, format) Simplex_CALLFUNCTION(x, pointerReturn) Simplex_FUNCTIONPRINT(x, pointerReturn, format)
+
 // TODO: Проверить шаг 6
 
 /*
@@ -50,7 +59,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		return 3;
 	}
 	double ** x = memory2;
-	for (unsigned char ii = length + 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+	for (unsigned char ii = length + 1; ii != (unsigned char)~0; ii--) {
 		x[ii] = (double*)malloc(length * sizeof(double));
 		if (x[ii] == NULL) {
 			ii++;
@@ -66,7 +75,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	double * x_minmax = NULL; // Это указатель на ту переменную, которая ближе к минимому или максимому. Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
 	double * x_maxmin = NULL; // Это указатель на ту переменную, которая ближе к минимому или максимому. Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
 	
-	for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+	for (unsigned char i = length - 1; i != (unsigned char)~0; i--) {
 		for (unsigned char ii = length + 2 - 1; ii != 0; ii--) {
 			x[ii][i] = 0.0;
 		}
@@ -78,7 +87,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	// length = 2 => length0, length1, 1, 2, length0, legth1, 1
 	double * memory3 = (double*)malloc(((length + 2) + (length + 1) + (length + 1)) * sizeof(double));
 	if (memory3 == NULL) {
-		for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
+		for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~0; jj--)
 			free(x[jj]);
 		free(memory1);
 		free(memory2);
@@ -87,9 +96,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	double * fvalue = memory3;
 	double * E = memory3 + length + 2;
 	double * fE = memory3 + length + 2 + length + 1;
-	for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~(unsigned char)0; ii--)
+	for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~0; ii--)
 		fvalue[ii] = nan(NULL);
-	for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~(unsigned char)0; ii--)
+	for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~0; ii--)
 		E[ii] = nan(NULL);
 	double
 		fvalue_center = nan(NULL),
@@ -104,32 +113,16 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	for (unsigned char i = 0; i < 2; i++)
 		d[i] = (sqrt(length + 1) + i * length - 1)*edgeLength / (length*sqrt(2));
 	for(unsigned char ii = 1; ii < length + 1; ii++) // Перебор векторов x_one, x_two
-		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) { // Перебор координат вектора
+		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) { // Перебор координат вектора
 			if (i == ii - 1)
 				x[ii][i] = x[0][i] + d[0];
 			else
 				x[ii][i] = x[0][i] + d[1];
 		}
 
-	// Вычисление x_current, x_one, x_two и печать их -----------------------
+	// Вычисление значения функции в точках x_current, x_one, x_two и печать их -----------------------
 	for (unsigned char ii = 0; ii < length + 1; ii++) {
-		ferror = f(length, x[ii], &(fvalue[ii]), contextFunction);
-		if (ferror != 0) {
-			if (out != NULL)
-				fprintf(out, "error fuction: %d, last value fvalue[%d]: %lf\n", ferror, (int)ii, fvalue[ii]);
-			for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
-				free(x[jj]);
-			free(memory1);
-			free(memory2);
-			free(memory3);
-			return 4;
-		}
-		if (out != NULL) {
-			fprintf(out, "%zu;\t", k++);
-			for (size_t i = 0; i < length; i++)
-				fprintf(out, "x[%zu]=%0.3lf;\t", i, x[ii][i]);
-			fprintf(out, "f(...)=%0.3lf\n", fvalue[ii]);
-		}
+		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), ("%zu;\t", k++))
 	}
 	unsigned char need_continue = 0;
 	do {
@@ -144,116 +137,88 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			// length + 2: размер массива
 			// -2: Последнего нет, предпоследний уже взят.
 			// -1: Правило перебора по циклу с конца на начало.
-			for (unsigned char ii = length + 2 - 2 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2 - 1; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] < fvalue[maxminIndex])
 					maxminIndex = ii;
 			}
 		else
-			for (unsigned char ii = length + 2 - 2 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2 - 1; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] > fvalue[maxminIndex])
 					maxminIndex = ii;
 			}
 
 		x_maxmin = x[maxminIndex];
 		fvalue_maxmin = fvalue[maxminIndex];
-		if (out != NULL)
-			fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
+		/* Печать fvalue_maxmin. */ if (out != NULL) fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
 
 		// Шаг 4. ------------------------------------
 
 		// Поиск тяжести и отражённой величины
 
-		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) {
 			x_center[i] = 0.0;
-			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if(ii != maxminIndex)
 					x_center[i] += x[ii][i]; // тут надо взять два наименьших (isNeedMax == false) или два наибольших (isNeedMax)
 			}
 			x_center[i] /= length;
 		}
 
-		if (out != NULL) {
-			fprintf(out, "N;\t");
-			for (size_t i = 0; i < length; i++)
-				fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]);
-			fprintf(out, "f_center(...)=not need\n");
-		}
+		/* Печать f_center. */ if (out != NULL) { fprintf(out, "N;\t"); for (size_t i = 0; i < length; i++) fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]); fprintf(out, "f_center(...)=not need\n"); }
 
 		// Шаг 5. --------------------------------------------------
 
 
-		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+		for (unsigned char i = length - 1; i != (unsigned char)~0; i--)
 			x[length + 2 - 1][i] = 2 * x_center[i] - x_maxmin[i]; // Последний элемент.
-		}
 
 		// Печать значения функции x_new -------------------
 
-		ferror = f(length, x[length + 2 - 1], &fvalue[length + 2 - 1], contextFunction);
-		if (ferror != 0) {
-			if (out != NULL)
-				fprintf(out, "error fuction: %d, last value fvalue[%d]: %lf\n", ferror, length + 2 - 1, fvalue[length + 2 - 1]);
-			for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
-				free(x[jj]);
-			free(memory1);
-			free(memory2);
-			free(memory3);
-			return 4;
+		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], ("%zu;\t", k++))
+
+		if (fvalue[length + 2 - 1] <= fvalue_maxmin)
+		{
+			goto step8;
 		}
-		if (out != NULL) {
-			fprintf(out, "%zu;\t", k++);
-			for (size_t i = 0; i < length; i++)
-				fprintf(out, "x[%zu]=%0.3lf;\t", i, x[length + 2 - 1][i]);
-			fprintf(out, "f(...)=%0.3lf\n", fvalue[length + 2 - 1]);
+		else
+		{
+			for()
 		}
+
+		step8:
 
 		// Шаг 8. Определение центра тяжести. -------------
 		// Проверка, можем ли закончить алгоритм.
 
-		for (unsigned char i = length - 1; i != (unsigned char)~(unsigned char)0; i--) {
+		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) {
 			x_center[i] = 0.0;
-			for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~0; ii--) {
 				if (ii != maxminIndex) 
 					x_center[i] += x[ii][i]; // Надо пропустить наибольший, если isNeedMax == false.
 			}
 			x_center[i] /= length + 1;
 		}
-		ferror = f(length, x_center, &fvalue_center, contextFunction);
-		if (ferror != 0) {
-			if (out != NULL)
-				fprintf(out, "error fuction: %d, last value fvalue_center: %lf\n", ferror, fvalue_center);
-			free(memory1);
-			return 4;
-		}
-		if (out != NULL) {
-			fprintf(out, "N;\t");
-			for (size_t i = 0; i < length; i++)
-				fprintf(out, "x[%zu]=%0.3lf;\t", i, x_center[i]);
-			fprintf(out, "f_center(...)=%0.3lf\n", fvalue_center);
-		}
+		Simplex_CALLFUNCTIONANDPRINT(x_center, &fvalue_center, "N;\t");
 
-		unsigned char minmaxIndex = 3;
+		unsigned char minmaxIndex = length + 1;
 		if (isNeedMax)
-			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] > fvalue[minmaxIndex])
 					minmaxIndex = ii;
 			}
 		else
-			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] > fvalue[minmaxIndex])
 					minmaxIndex = ii;
 			}
 		x_minmax = x[minmaxIndex];
 		fvalue_minmax = fvalue[minmaxIndex];
 
-		for (unsigned char ii = length + 2 - 1, i = 0; ii != (unsigned char)~(unsigned char)0; ii--) {
+		for (unsigned char ii = length + 2 - 1, i = 0; ii != (unsigned char)~0; ii--) {
 			if (ii != maxminIndex) // Надо пропустить наибольший, если isNeedMax == false.
 				fE[i++] = fabs(fvalue[ii] - fvalue_center);
 		}
-		if (out != NULL) {
-			for (unsigned char ii = length + 1 - 1, i = 0; ii != (unsigned char)~(unsigned char)0; ii--)
-				fprintf(out, "E[%d]=%0.3lf\t", ii, fE[ii]);
-			fprintf(out, "\n");
-		}
+		/* Печать погрешностей. */ if (out != NULL) { for (unsigned char ii = length + 1 - 1, i = 0; ii != (unsigned char)~0; ii--) fprintf(out, "E[%d]=%0.3lf\t", ii, fE[ii]); fprintf(out, "\n"); }
 
 		// Готовим новый симплекс на тот случай, если не подходит ------
 
@@ -262,26 +227,21 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 		unsigned char needDeleteIndex = length + 1;
 		if (isNeedMax) {
-			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] < fvalue[needDeleteIndex])
 					needDeleteIndex = ii;
 			}
 		}
 		else
-			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~(unsigned char)0; ii--) {
+			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if (fvalue[ii] > fvalue[needDeleteIndex])
 					needDeleteIndex = ii;
 			}
 
-		if (out != NULL)
-			fprintf(out, "delete f = %0.3lf\t", fvalue[needDeleteIndex]);
+		/* Печать значения функции, которую отбрасываем */ if (out != NULL) fprintf(out, "delete f = %0.3lf\t", fvalue[needDeleteIndex]);
 
 		if (needDeleteIndex == length + 1) {
-			for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
-				free(x[jj]);
-			free(memory1);
-			free(memory2);
-			free(memory3);
+			Simplex_FREEALL;
 			return 6;
 		}
 
@@ -289,20 +249,15 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			if (i == needDeleteIndex)
 				i++;
 			fvalue[ii] = fvalue[i];
-			for(unsigned char j = length - 1; j != (unsigned char)~(unsigned char)0; j--)
+			for(unsigned char j = length - 1; j != (unsigned char)~0; j--)
 				x[ii][j] = x[i][j];
 			i++;
 		}
 
-		if (out != NULL) {
-			for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
-				fprintf(out, "f[%d]=%0.3lf\t", ii, fvalue[ii]);
-			}
-			fprintf(out, "\n");
-		}
+		/* Печать оставшихся функций. */ if (out != NULL) { for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~0; ii--) { fprintf(out, "f[%d]=%0.3lf\t", ii, fvalue[ii]); } fprintf(out, "\n"); }
 
 		need_continue = 0;
-		for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~(unsigned char)0; ii--) {
+		for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~0; ii--) {
 			need_continue = need_continue || fE[ii] >= accuracy;
 		}
 
@@ -313,11 +268,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		output[i] = x[length + 2 - 1][i];
 	}
 
-	for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~(unsigned char)0; jj--)
-		free(x[jj]);
-	free(memory1);
-	free(memory2);
-	free(memory3);
+	Simplex_FREEALL;
 	return 0;
 }
 
