@@ -202,6 +202,8 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		// Печать значения функции x_new -------------------
 		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], ("%zu;\t", k++));
 		// Шаг 6. --------------------------------------------------
+
+		size_t minmaxIndex;
 		if (fvalue[length + 2 - 1] <= fvalue_maxmin)
 		{
 			x[maxminIndex] = x[length + 1];
@@ -210,64 +212,40 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		else
 		{
 			// Шаг 7.
-			x_minmax
+			if (ferror = Simplex_searchMinmax(&minmaxIndex, x, length + 1, isNeedMax)) {
+				Simplex_FREEALL;
+				/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %zu\n", ferror);
+				return 7;
+			}
+			for (size_t vectorInd = length + 1 - 1; vectorInd != SIZE_MAX; vectorInd--)
+				if (vectorInd != minmaxIndex)
+					for (size_t dimInd = length - 1; dimInd != SIZE_MAX; dimInd--)
+						x[vectorInd][dimInd] =
+						(x[minmaxIndex][dimInd] + x[vectorInd][dimInd]) / 2.0;
 		}
 
 		// Шаг 8. Определение центра тяжести. -------------
 		// Проверка, можем ли закончить алгоритм.
 
-		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) {
+		for (size_t i = length - 1; i != SIZE_MAX; i--) {
 			x_center[i] = 0.0;
-			for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~0; ii--) {
-				if (ii != maxminIndex) 
-					x_center[i] += x[ii][i]; // Надо пропустить наибольший, если isNeedMax == false.
+			for (size_t ii = length + 1 - 1; ii != SIZE_MAX; ii--) {
+					x_center[i] += x[ii][i];
 			}
 			x_center[i] /= length + 1;
 		}
 		Simplex_CALLFUNCTIONANDPRINT(x_center, &fvalue_center, "N;\t");
 
-		size_t minmaxIndex;
-		if (ferror = Simplex_searchMinmax(&minmaxIndex, fvalue, length + 2, isNeedMax)) {
-			Simplex_FREEALL;
-			/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %zu\n", ferror);
-			return 7;
-		}
-		x_minmax = x[minmaxIndex]; fvalue_minmax = fvalue[minmaxIndex];
+		// Шаг 9. -------------------------------------
 
-		for (size_t ii = length + 2 - 1, i = 0; ii != SIZE_MAX; ii--) {
-			if (ii != maxminIndex) // Надо пропустить наибольший, если isNeedMax == false.
+		for (size_t ii = length + 1 - 1, i = 0; ii != SIZE_MAX; ii--)
 				fE[i++] = fabs(fvalue[ii] - fvalue_center);
-		}
 		/* Печать погрешностей. */ if (out != NULL) { for (size_t ii = length + 1 - 1, i = 0; ii != SIZE_MAX; ii--) fprintf(out, "E[%d]=%0.3lf\t", ii, fE[ii]); fprintf(out, "\n"); }
 
 		// Готовим новый симплекс на тот случай, если не подходит ------
 
 		// isNeedMax == True => надо отбросить самый маленький.
 		// isNeedMax == False => надо отбросить самый максимальный.
-
-		size_t needDeleteIndex;
-		if (ferror = Simplex_searchMinmax(&needDeleteIndex, fvalue, length + 2, !isNeedMax)) {
-			Simplex_FREEALL;
-			/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %zu\n", ferror);
-			return 7;
-		}
-
-		/* Печать значения функции, которую отбрасываем */ if (out != NULL) fprintf(out, "delete f = %0.3lf\t", fvalue[needDeleteIndex]);
-
-		if (needDeleteIndex == length + 1) {
-			Simplex_FREEALL;
-			return 6;
-		}
-
-		for (size_t ii = 0, i = 0; ii < length + 2 - 1; ii++) {
-			if (i == needDeleteIndex)
-				i++;
-			fvalue[ii] = fvalue[i];
-			for(size_t j = length - 1; j != SIZE_MAX; j--)
-				x[ii][j] = x[i][j];
-			i++;
-		}
-
 		/* Печать оставшихся функций. */ if (out != NULL) { for (size_t ii = length + 1 - 1; ii != SIZE_MAX; ii--) { fprintf(out, "f[%d]=%0.3lf\t", ii, fvalue[ii]); } fprintf(out, "\n"); }
 
 		need_continue = 0;
