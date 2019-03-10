@@ -4,13 +4,13 @@
 #include <corecrt_math.h>
 
 // Освобождение memory1, 2 и 3. Все элементы внутри x.
-#define Simplex_FREEALL for(unsigned char qkfjewigwegiojwegfj = length + 2 - 1; qkfjewigwegiojwegfj != (unsigned char)~0; qkfjewigwegiojwegfj--) free(x[qkfjewigwegiojwegfj]); free(memory1); free(memory2); free(memory3);
+#define Simplex_FREEALL {for(unsigned char qkfjewigwegiojwegfj = length + 2 - 1; qkfjewigwegiojwegfj != (unsigned char)~0; qkfjewigwegiojwegfj--) free(x[qkfjewigwegiojwegfj]); free(memory1); free(memory2); free(memory3);}
 // Вычисление функции f в точке x. Результат помещается по указателю pointerReturn. Если ошибка, то вызывается Simplex_FREEALL и return 4;. Печать ошибки в out если это возможно.
-#define Simplex_CALLFUNCTION(x, pointerReturn) ferror = f(length, x, pointerReturn, contextFunction); if (ferror != 0) { if (out != NULL) fprintf(out, "error fuction: %d, last value: %lf\n", ferror, *pointerReturn); Simplex_FREEALL; return 4; }
+#define Simplex_CALLFUNCTION(x, pointerReturn) {ferror = f(length, x, pointerReturn, contextFunction); if (ferror != 0) { if (out != NULL) fprintf(out, "error fuction: %d, last value: %lf\n", ferror, *pointerReturn); Simplex_FREEALL; return 4; }}
 // Печать заголовка, аргументов и значение функции. Всё, что написано в format будет отправлено в printf перед печатью.
-#define Simplex_FUNCTIONPRINT(x, pointerReturn, format) if (out != NULL) { fprintf(out, format); for (size_t jwoiqqf = 0; jwoiqqf < length; jwoiqqf++) fprintf(out, "x[%zu]=%0.3lf;\t", jwoiqqf, x[jwoiqqf]); fprintf(out, "f(...)=%0.3lf\n", *pointerReturn); }
+#define Simplex_FUNCTIONPRINT(x, pointerReturn, format) {if (out != NULL) { fprintf(out, format); for (size_t jwoiqqf = 0; jwoiqqf < length; jwoiqqf++) fprintf(out, "x[%zu]=%0.3lf;\t", jwoiqqf, x[jwoiqqf]); fprintf(out, "f(...)=%0.3lf\n", *pointerReturn); }}
 // Вычисление и печать функции. Вызывает Simplex_CALLFUNCTION, а затем Simplex_FUNCTIONPRINT.
-#define Simplex_CALLFUNCTIONANDPRINT(x, pointerReturn, format) Simplex_CALLFUNCTION(x, pointerReturn) Simplex_FUNCTIONPRINT(x, pointerReturn, format)
+#define Simplex_CALLFUNCTIONANDPRINT(x, pointerReturn, format) {Simplex_CALLFUNCTION(x, pointerReturn) Simplex_FUNCTIONPRINT(x, pointerReturn, format)}
 
 // TODO: Проверить шаг 6
 
@@ -108,28 +108,32 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			nan(NULL) };
 	int ferror = 0;
 
+	// x[0] - начальные. x[1] ... x[length] - новые.
 	// Шаг 2 ---------------------------------------------------------
 	
 	for (unsigned char i = 0; i < 2; i++)
 		d[i] = (sqrt(length + 1) + i * length - 1)*edgeLength / (length*sqrt(2));
-	for(unsigned char ii = 1; ii < length + 1; ii++) // Перебор векторов x_one, x_two
-		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) { // Перебор координат вектора
+
+	for(unsigned char ii = 1; ii < length + 1; ii++)
+		// Перебор векторов.
+		for (unsigned char i = length - 1; i != (unsigned char)~0; i--)
+			// Перебор координат вектора
 			if (i == ii - 1)
 				x[ii][i] = x[0][i] + d[0];
 			else
 				x[ii][i] = x[0][i] + d[1];
-		}
 
-	// Вычисление значения функции в точках x_current, x_one, x_two и печать их -----------------------
-	for (unsigned char ii = 0; ii < length + 1; ii++) {
-		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), ("%zu;\t", k++))
-	}
+	// Вычисление значения функции в точках x[1] ... x[length] и печать их -----------------------
+	for (unsigned char ii = 0; ii < length + 1; ii++)
+		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), ("%zu;\t", k++));
+	// True, если надо продолжить.
 	unsigned char need_continue = 0;
 	do {
 		// Шаг 3 --------------------------------------
 
-		// Нам нужен максимум или минимум? ------------------------
-
+		// Нам нужен максимум или минимум?
+		// isNeedMax = 0 => Max. Иначе - min.
+		// Содержит в себе индекс самого "противоположного" элемента.
 		unsigned char maxminIndex = length;
 
 		// Последнего элемента у нас нет. Предположим, что максимальным (isNeedMax == false) является x_two
@@ -147,19 +151,18 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 					maxminIndex = ii;
 			}
 
-		x_maxmin = x[maxminIndex];
-		fvalue_maxmin = fvalue[maxminIndex];
+		x_maxmin = x[maxminIndex]; fvalue_maxmin = fvalue[maxminIndex];
 		/* Печать fvalue_maxmin. */ if (out != NULL) fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
 
 		// Шаг 4. ------------------------------------
-
-		// Поиск тяжести и отражённой величины
+		// Поиск центра тяжести
 
 		for (unsigned char i = length - 1; i != (unsigned char)~0; i--) {
 			x_center[i] = 0.0;
 			for (unsigned char ii = length + 2 - 2; ii != (unsigned char)~0; ii--) {
 				if(ii != maxminIndex)
-					x_center[i] += x[ii][i]; // тут надо взять два наименьших (isNeedMax == false) или два наибольших (isNeedMax)
+					// тут надо взять length наименьших (!isNeedMax) или length наибольших (isNeedMax)
+					x_center[i] += x[ii][i]; 
 			}
 			x_center[i] /= length;
 		}
@@ -168,24 +171,22 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 		// Шаг 5. --------------------------------------------------
 
-
 		for (unsigned char i = length - 1; i != (unsigned char)~0; i--)
 			x[length + 2 - 1][i] = 2 * x_center[i] - x_maxmin[i]; // Последний элемент.
 
 		// Печать значения функции x_new -------------------
-
 		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], ("%zu;\t", k++))
 
 		if (fvalue[length + 2 - 1] <= fvalue_maxmin)
 		{
-			goto step8;
+			x[maxminIndex] = x[length + 1];
+			fvalue[maxminIndex] = fvalue[length + 1];
 		}
 		else
 		{
+			// Шаг 7.
 			for()
 		}
-
-		step8:
 
 		// Шаг 8. Определение центра тяжести. -------------
 		// Проверка, можем ли закончить алгоритм.
