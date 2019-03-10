@@ -395,7 +395,7 @@ extern "C" {
 			{
 				break;
 			}
-			if (buffer == ~'\0')
+			if (buffer == 255ui8)
 			{
 #ifdef _MSC_VER
 				fscanf_s(fpIN, "%*s");

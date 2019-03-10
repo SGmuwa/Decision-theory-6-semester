@@ -65,8 +65,9 @@ void * contextFunction: Указатель на контекст функции.
 */
 int Simplex_runPrint(int f(unsigned char length, const double * x, double * output, void * contextFunction), const unsigned char length, double edgeLength, char isNeedMax, double accuracy, double * output, const double * start, void * contextFunction, FILE * out) {
 
+	#define Simplex_singleArgument2(A, B) A, B
 	// Освобождение memory1, 2 и 3. Все элементы внутри x.
-	#define Simplex_FREEALL {for(size_t qkfjewigwegiojwegfj = length + 2 - 1; qkfjewigwegiojwegfj != SIZE_MAX; qkfjewigwegiojwegfj--) free(x[qkfjewigwegiojwegfj]); free(memory1); free(memory2); free(memory3);}
+	#define Simplex_FREEALL {for(size_t qkfjewigwegiojwegfj = length + 1 - 1; qkfjewigwegiojwegfj != SIZE_MAX; qkfjewigwegiojwegfj--) free(x[qkfjewigwegiojwegfj]); free(memory1); free(memory2); free(memory3);}
 	// Вычисление функции f в точке x. Результат помещается по указателю pointerReturn. Если ошибка, то вызывается Simplex_FREEALL и return 4;. Печать ошибки в out если это возможно.
 	#define Simplex_CALLFUNCTION(x, pointerReturn) {ferror = f(length, x, pointerReturn, contextFunction); if (ferror != 0) { if (out != NULL) fprintf(out, "error fuction: %d, last value: %lf\n", ferror, *pointerReturn); Simplex_FREEALL; return 4; }}
 	// Печать заголовка, аргументов и значение функции. Всё, что написано в format будет отправлено в printf перед печатью.
@@ -83,7 +84,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		return 2;
 	if (length > 250)
 		return 1;
-	double * memory1 = (double*)malloc(2 * length * sizeof(double)) + 0 * length;
+	double * memory1 = (double*)malloc(2 * length * sizeof(double));
 	if (memory1 == NULL)
 		return 3;
 	double 
@@ -95,12 +96,12 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		return 3;
 	}
 	double ** x = memory2;
-	for (unsigned char ii = length + 1; ii != (unsigned char)~0; ii--) {
+	for (size_t ii = length + 1; ii != SIZE_MAX; ii--) {
 		x[ii] = (double*)malloc(length * sizeof(double));
 		if (x[ii] == NULL) {
 			ii++;
 			while (ii != length + 2) {
-				free(x[ii]);
+				free(x[ii++]);
 			}
 			free(memory1);
 			free(memory2);
@@ -161,7 +162,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 	// Вычисление значения функции в точках x[1] ... x[length] и печать их -----------------------
 	for (size_t ii = 0; ii < length + 1; ii++)
-		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), ("%zu;\t", k++));
+		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), Simplex_singleArgument2("%zu;\t", k++));
 	// True, если надо продолжить.
 	unsigned char need_continue = 0;
 	do {
@@ -174,7 +175,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		// Ищем самый ненужный элемент.
 		if (ferror = Simplex_searchMinmax(&maxminIndex, fvalue, length + 1, !isNeedMax)) {
 			Simplex_FREEALL;
-			/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %zu\n", ferror);
+			/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %d\n", ferror);
 			return 7; }
 		x_maxmin = x[maxminIndex]; fvalue_maxmin = fvalue[maxminIndex];
 		/* Печать fvalue_maxmin. */ if (out != NULL) fprintf(out, "fvalue_maxmin: %lf\n", fvalue_maxmin);
@@ -200,13 +201,14 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			x[length + 2 - 1][i] = 2 * x_center[i] - x_maxmin[i]; // Последний элемент.
 
 		// Печать значения функции x_new -------------------
-		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], ("%zu;\t", k++));
+		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], Simplex_singleArgument2("%zu;\t", k++));
 		// Шаг 6. --------------------------------------------------
 
 		size_t minmaxIndex;
 		if (fvalue[length + 2 - 1] <= fvalue_maxmin)
 		{
-			x[maxminIndex] = x[length + 1];
+			for (size_t dimInd = length - 1; dimInd != SIZE_MAX; dimInd--)
+				x[maxminIndex][dimInd] = x[length + 1][dimInd];
 			fvalue[maxminIndex] = fvalue[length + 1];
 		}
 		else
@@ -214,7 +216,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			// Шаг 7.
 			if (ferror = Simplex_searchMinmax(&minmaxIndex, x, length + 1, isNeedMax)) {
 				Simplex_FREEALL;
-				/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %zu\n", ferror);
+				/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %d\n", ferror);
 				return 7;
 			}
 			for (size_t vectorInd = length + 1 - 1; vectorInd != SIZE_MAX; vectorInd--)
@@ -263,6 +265,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	Simplex_FREEALL;
 	return 0;
 
+	#undef Simplex_singleArgument2
 	#undef Simplex_FREEALL
 	#undef Simplex_CALLFUNCTION
 	#undef Simplex_FUNCTIONPRINT

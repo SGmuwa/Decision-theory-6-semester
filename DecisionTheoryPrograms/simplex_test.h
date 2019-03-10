@@ -189,7 +189,7 @@ int Simplex_test_main(void) {
 			while (!feof(testFp))
 			{
 				fread(&buffer, sizeof(char), 1, testFp);
-				printf("%c", (char)buffer);
+				printf("%c", *buffer);
 			}
 		}
 		else
