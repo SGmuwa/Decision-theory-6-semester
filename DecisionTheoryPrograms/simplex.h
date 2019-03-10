@@ -124,7 +124,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	// length = 2 => length0, length1, 1, 2, length0, legth1, 1
 	double * memory3 = (double*)malloc(((length + 2) + (length + 1) + (length + 1)) * sizeof(double));
 	if (memory3 == NULL) {
-		for (unsigned char jj = length + 2 - 1; jj != (unsigned char)~0; jj--)
+		for (size_t jj = length + 2 - 1; jj != SIZE_MAX; jj--)
 			free(x[jj]);
 		free(memory1);
 		free(memory2);
@@ -133,9 +133,9 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	double * fvalue = memory3;
 	double * E = memory3 + length + 2;
 	double * fE = memory3 + length + 2 + length + 1;
-	for (unsigned char ii = length + 2 - 1; ii != (unsigned char)~0; ii--)
+	for (size_t ii = length + 2 - 1; ii != SIZE_MAX; ii--)
 		fvalue[ii] = nan(NULL);
-	for (unsigned char ii = length + 1 - 1; ii != (unsigned char)~0; ii--)
+	for (size_t ii = length + 1 - 1; ii != SIZE_MAX; ii--)
 		E[ii] = nan(NULL);
 	double
 		fvalue_center = nan(NULL),
@@ -166,6 +166,10 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	// True, если надо продолжить.
 	unsigned char need_continue = 0;
 	do {
+		if (k > 1000) {
+			Simplex_FREEALL;
+			return 6;
+		}
 		// Шаг 3 --------------------------------------
 
 		// Нам нужен максимум или минимум?
@@ -214,7 +218,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 		else
 		{
 			// Шаг 7.
-			if (ferror = Simplex_searchMinmax(&minmaxIndex, x, length + 1, isNeedMax)) {
+			if (ferror = Simplex_searchMinmax(&minmaxIndex, fvalue, length + 1, isNeedMax)) {
 				Simplex_FREEALL;
 				/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %d\n", ferror);
 				return 7;
@@ -257,9 +261,16 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 	} while (need_continue);
 
+	size_t minmaxIndex;
+	if (ferror = Simplex_searchMinmax(&minmaxIndex, fvalue, length + 1, isNeedMax)) {
+		Simplex_FREEALL;
+		/* Печать отчёта об Simplex_searchMinmax. */ if (out != NULL) fprintf(out, "Simplex_searchMinmax: error %d\n", ferror);
+		return 7;
+	}
+
 	// Запись ответа
 	for (size_t i = 0; i < length; i++) {
-		output[i] = x[length + 2 - 1][i];
+		output[i] = x[minmaxIndex][i];
 	}
 
 	Simplex_FREEALL;

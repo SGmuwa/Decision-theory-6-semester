@@ -96,7 +96,7 @@ int Simplex_test_studentsFindXMinTest(FILE * out) {
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-11.0 / 23.0, 0.0, 0.0}, -627.0 / 230.0, 0, Simplex_test_function0},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {-13.0 / 38.0, -13.0 / 36.0, 0.0}, -6253.0 / 13680.0, 0, Simplex_test_function50},
 		{{1.0, 1.0, 0.0}, 0.25, 0.1, 2, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 0, Simplex_test_function60},
-		{{1, 1, 1}, 0.25, 0.1, 3, 0, {0.0, 0.75, 0.0}, -63.0 / 80.0, 6, Simplex_test_function60}
+		{{-1.0, 1.0, 1.0}, 0.25, 0.1, 3, 0, {-11.0/23.0, 0.0, 0.0}, -627.0 / 230.0, 0, Simplex_test_function60}
 	};
 	wchar_t buffer[256];
 	for (unsigned i = 0; i < sizeof(param) / sizeof(struct paramsOfTests); i++) {
