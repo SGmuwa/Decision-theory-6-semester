@@ -19,7 +19,7 @@ public class Simplex
                     tableSimplex[i, j] = mas[j];
                 else
                     tableSimplex[i, j] = -0;
-        tableSimplex[0, n] = objectiveFunction(mas);
+        tableSimplex[0, n] = TargetFunction(mas);
 
         double increment1 =
             (double)(Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
@@ -38,7 +38,7 @@ public class Simplex
             for (int i = 0; i < n + 1; i++)
                 for (int j = 0; j < n; j++)
                     if (i == tempN + 1) tableSimplex[i, j] = x[j];
-            tableSimplex[tempN + 1, n] = objectiveFunction(x);
+            tableSimplex[tempN + 1, n] = TargetFunction(x);
             tempN++;
         }
         for (int i = 0; i < n + 1; i++)
@@ -69,7 +69,7 @@ public class Simplex
                     if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
                 }
             }
-            int maxVertex = maxSearch(arrayFuncValue);
+            int maxVertex = SearchMax(arrayFuncValue);
             for (int i = 0; i < n + 1; i++)
             {
                 for (int t = 0; t < n; t++)
@@ -90,20 +90,20 @@ public class Simplex
             }
             double Fxc = 0;
             Console
-                .WriteLine("Значение функции максимальной точки симлекса:" +
-                objectiveFunction(mas) +
+                .WriteLine("Значение функции максимальной точки Симлекса:" +
+                TargetFunction(mas) +
                 ";     Значение функции в отраженной вершине:" +
-                objectiveFunction(reflectedVertex));
-            if (objectiveFunction(reflectedVertex) < objectiveFunction(mas))
+                TargetFunction(reflectedVertex));
+            if (TargetFunction(reflectedVertex) < TargetFunction(mas))
             {
                 //Наблюдается уменьшение целевой функции
                 //Проверим условие окончания поиска
-                //0) Заменяем рершину в таблице
+                //0) Заменяем вершину в таблице
                 for (int i = 0; i < n + 1; i++)
                     for (int j = 0; j < n; j++)
                         if (i == maxVertex) tableSimplex[i, j] = reflectedVertex[j];
                 tableSimplex[maxVertex, n] =
-                    objectiveFunction(reflectedVertex);
+                    TargetFunction(reflectedVertex);
 
                 // 1) Вывод таблицы и поиск центра тяжести
                 Console.WriteLine();
@@ -114,16 +114,14 @@ public class Simplex
                     for (int t = 0; t < n + 1; t++)
                     {
                         if (t < n)
-                        {
                             centerOfGravityXc[t] =
                                 centerOfGravityXc[t] +
-                                ((double)1 / (n + 1)) * tableSimplex[i, t];
-                        }
+                                1.0 / (n + 1) * tableSimplex[i, t];
                         Console.Write(tableSimplex[i, t] + "\t");
                     }
                     Console.WriteLine();
                 }
-                Fxc = objectiveFunction(centerOfGravityXc);
+                Fxc = TargetFunction(centerOfGravityXc);
                 Console.WriteLine("Центр тяжести симплекса: " + Fxc);
                 Console.Write("Координаты центра тяжести симплекса: ");
                 for (int i = 0; i < centerOfGravityXc.Length; i++)
@@ -134,15 +132,11 @@ public class Simplex
                 // Иначе не заменяем вершину в таблице. Выполняется операция редукции
                 Console.WriteLine("НЕОБХОДИМА операция редукции");
                 for (int i = 0; i < n + 1; i++)
-                {
                     for (int t = 0; t < n + 1; t++)
-                    {
-                        if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
-                    }
-                }
-                int minVertex = minSearch(arrayFuncValue);
+                        if (t == n)
+                            arrayFuncValue[i] = tableSimplex[i, t];
+                int minVertex = SearchMin(arrayFuncValue);
                 for (int i = 0; i < n + 1; i++)
-                {
                     for (int t = 0; t < n + 1; t++)
                     {
                         if (t != n & i != minVertex)
@@ -155,13 +149,11 @@ public class Simplex
                             mas[t] = tableSimplex[i, t];
                         }
                         else
-                        {
                             if (t == n & i != minVertex)
-                                tableSimplex[i, t] = objectiveFunction(mas);
-                            for (int k = 0; k < mas.Length; k++) mas[k] = 0;
-                        }
+                                tableSimplex[i, t] = TargetFunction(mas);
+                            for (int k = 0; k < mas.Length; k++)
+                                mas[k] = 0;
                     }
-                }
 
                 // 1) Вывод таблицы и поиск центра тяжести
                 Console.WriteLine();
@@ -172,16 +164,14 @@ public class Simplex
                     for (int t = 0; t < n + 1; t++)
                     {
                         if (t < n)
-                        {
                             centerOfGravityXc[t] =
                                 centerOfGravityXc[t] +
-                                ((double)1 / (n + 1)) * tableSimplex[i, t];
-                        }
+                                1.0 / (n + 1) * tableSimplex[i, t];
                         Console.Write(tableSimplex[i, t] + "\t");
                     }
                     Console.WriteLine();
                 }
-                Fxc = objectiveFunction(centerOfGravityXc);
+                Fxc = TargetFunction(centerOfGravityXc);
                 Console.WriteLine("Центр тяжести симплекса: " + Fxc);
             }
 
@@ -201,32 +191,23 @@ public class Simplex
             if (checkEnd == n + 1)
             {
                 for (int i = 0; i < n + 1; i++)
-                {
                     for (int t = 0; t < n + 1; t++)
-                    {
-                        if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
-                    }
-                }
-                int minVertex = minSearch(arrayFuncValue);
+                        if (t == n)
+                            arrayFuncValue[i] = tableSimplex[i, t];
+                int minVertex = SearchMin(arrayFuncValue);
                 double resultMin = tableSimplex[minVertex, n];
-                Console
-                    .WriteLine("\n" +
-                    "\n" +
-                    "ОТВЕТ: минимальная вершина: " +
-                    resultMin);
+                Console .WriteLine("\n\nОТВЕТ: минимальная вершина: " + resultMin);
                 return;
             }
         }
     }
 
-    public static double objectiveFunction(double[] mas)
-    {
-        return ((double)13 / 5) * (Math.Pow(mas[0], 2)) -
-        ((double)21 / 10) * mas[1] +
-        ((double)7 / 5) * (Math.Pow(mas[1], 2));
-    }
+    public static double TargetFunction(double[] mas)
+        => 2.6 * Math.Pow(mas[0], 2) -
+        2.1 * mas[1] +
+        1.4 * Math.Pow(mas[1], 2);
 
-    public static int maxSearch(double[] mas)
+    public static int SearchMax(double[] mas)
     {
         double max = mas[0];
         int ind = 0;
@@ -239,7 +220,7 @@ public class Simplex
         return ind;
     }
 
-    public static int minSearch(double[] mas)
+    public static int SearchMin(double[] mas)
     {
         double min = mas[0];
         int ind = 0;
