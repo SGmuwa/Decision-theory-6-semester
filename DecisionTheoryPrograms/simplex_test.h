@@ -63,7 +63,7 @@ int Simplex_test_function50(unsigned char length, const double * x, double * out
 
 int Simplex_test_teacherFindXMinTest(FILE * out) {
 	// https://docs.google.com/document/d/1FDIk30yvL9qWl7x6AWMDSHX6wCzaQEIFVrTddNiGejs/edit
-	double x_answer[2] = { nan(NULL), nan(NULL) };
+	double x_answer[2] = { nan(""), nan("") };
 	double start[] = { 0.0, 0.0 };
 	int error = Simplex_runPrint(Simplex_test_functionTeacher, 2, 0.25, 0, 0.1, x_answer, start, NULL, out);
 	if (Test_assertEqualsInt(L"1. Во время симплекса произошла ошибка.", 0, error)) return 1;
@@ -77,7 +77,7 @@ int Simplex_test_teacherFindXMinTest(FILE * out) {
 */
 int Simplex_test_studentsFindXMinTest(FILE * out) {
 	// https://drive.google.com/drive/folders/1jfJSP_ob3i55cCLQ8aHz47avZ9fDo0YN
-	double x[3] = {nan(NULL), nan(NULL), nan(NULL)}; // Сюда записывается ответ.
+	double x[3] = {nan(""), nan(""), nan("")}; // Сюда записывается ответ.
 	double f;
 	int error = 0;
 	struct paramsOfTests {

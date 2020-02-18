@@ -47,6 +47,7 @@ int Program_printTestResult(void) {
 
 int Program_menu(void) {
 	int error = 0;
+	printf("%s", "Hello, world!1\n");
 	switch (UserInterface_GetChek("Выберите вариант ответа:\n0 - выход.\n1 - симплекс.\n2 - тестирования\n", 2))
 	{
 	case 1:
@@ -65,13 +66,14 @@ int Program_menu(void) {
 }
 
 int Program_main(int argc, char argv[]) {
-	setlocale(LC_ALL, "rus");
+	setlocale(LC_ALL, "ru");
 	int error = Simplex_test_main();
 	while (Program_menu() == 0);
 	return error;
 }
 
 int main(int argc, char argv[]) {
+	scanf("%*s");
 	return Program_main(argc, argv);
 }
 

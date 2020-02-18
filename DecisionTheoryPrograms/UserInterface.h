@@ -395,7 +395,7 @@ extern "C" {
 			{
 				break;
 			}
-			if (buffer == 255ui8)
+			if (buffer == 255u)
 			{
 #ifdef _MSC_VER
 				fscanf_s(fpIN, "%*s");
@@ -579,6 +579,7 @@ extern "C" {
 	// Возвращает: Целое неотрицательное число, которое было получено из потока ввода.
 	unsigned char UserInterface_GetChek(const char * message, unsigned char maxAccess)
 	{
+		printf("%s", "Hello, world!2\n");
 		return UserInterface_fGetChek(message, maxAccess, stdin, stdout);
 	}
 

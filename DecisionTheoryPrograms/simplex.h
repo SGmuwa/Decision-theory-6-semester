@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <stdio.h>
 #include <stdlib.h>
-#include <corecrt_math.h>
+#include <stdint.h>
 
 // TODO: Проверить шаг 6
 
@@ -134,15 +134,15 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 	double * E = memory3 + length + 2;
 	double * fE = memory3 + length + 2 + length + 1;
 	for (size_t ii = length + 2 - 1; ii != SIZE_MAX; ii--)
-		fvalue[ii] = nan(NULL);
+		fvalue[ii] = nan("");
 	for (size_t ii = length + 1 - 1; ii != SIZE_MAX; ii--)
-		E[ii] = nan(NULL);
+		E[ii] = nan("");
 	double
-		fvalue_center = nan(NULL),
-		fvalue_minmax = nan(NULL), // Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
-		fvalue_maxmin = nan(NULL), // Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
-		d[] = { nan(NULL),
-			nan(NULL) };
+		fvalue_center = nan(""),
+		fvalue_minmax = nan(""), // Если isNeedMax = 0, то min. Если isNeedMax = 1, то хранит max.
+		fvalue_maxmin = nan(""), // Если isNeedMax = 0, то max. Если isNeedMax = 1, то хранит min.
+		d[] = { nan(""),
+			nan("") };
 	int ferror = 0;
 
 	// x[0] - начальные. x[1] ... x[length] - новые.
@@ -162,7 +162,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 
 	// Вычисление значения функции в точках x[1] ... x[length] и печать их -----------------------
 	for (size_t ii = 0; ii < length + 1; ii++)
-		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), Simplex_singleArgument2("%zu;\t", k++));
+		Simplex_CALLFUNCTIONANDPRINT(x[ii], &(fvalue[ii]), (Simplex_singleArgument2("%zu;\t", k++)));
 	// True, если надо продолжить.
 	unsigned char need_continue = 0;
 	do {
@@ -205,7 +205,7 @@ int Simplex_runPrint(int f(unsigned char length, const double * x, double * outp
 			x[length + 2 - 1][i] = 2 * x_center[i] - x_maxmin[i]; // Последний элемент.
 
 		// Печать значения функции x_new -------------------
-		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], Simplex_singleArgument2("%zu;\t", k++));
+		Simplex_CALLFUNCTIONANDPRINT(x[length + 2 - 1], &fvalue[length + 2 - 1], (Simplex_singleArgument2("%zu;\t", k++)));
 		// Шаг 6. --------------------------------------------------
 
 		size_t minmaxIndex;

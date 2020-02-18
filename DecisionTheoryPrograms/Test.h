@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <stdio.h>
+#include <wchar.h>
 
 int Test_assertEqualsInt(const wchar_t * message, int expect, int actual) {
 	if (expect == actual)
