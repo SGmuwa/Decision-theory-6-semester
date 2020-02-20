@@ -113,8 +113,15 @@ public static class Simplex
             int checkEnd = 0;
             for (int i = 0; i < tableSimplex.GetLength(0); i++)
                 if (Math.Abs(tableSimplex[i, n] - centerY) < E)
+                {
+                    Console.WriteLine($"Останова: (|{tableSimplex[i, n].ToString("f3")} - {centerY.ToString("f3")}| = {Math.Abs(tableSimplex[i, n] - centerY).ToString("f3")}) < {E}");
                     checkEnd++;
-                else break;
+                }
+                else
+                {
+                    Console.WriteLine($"Останова: (|{tableSimplex[i, n].ToString("f3")} - {centerY.ToString("f3")}| = {Math.Abs(tableSimplex[i, n] - centerY).ToString("f3")}) ≥ {E}");
+                    break;
+                }
             if (checkEnd == tableSimplex.GetLength(0))
             {
                 for (int i = 0; i < tableSimplex.GetLength(0); i++)
