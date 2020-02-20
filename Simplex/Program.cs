@@ -50,18 +50,24 @@ public static class Simplex
                 arrayFuncValue[i] = tableSimplex[i, n];
             int maxVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Max());
             Console.WriteLine($"Максимум: [{maxVertex}] = {arrayFuncValue[maxVertex]}");
-            for (int i = 0; i < n + 1; i++)
-                for (int t = 0; t < n; t++)
+            for (int t = 0; t < n; t++)
+                for (int i = 0; i < n + 1; i++)
                     if (i == maxVertex)
                         start[t] = tableSimplex[i, t];
                     else
+                    {
                         centerOfGravityXc[t] +=
-                            tableSimplex[i, t] / n;
-
+                            tableSimplex[i, t] / (tableSimplex.GetLength(0) - 1);
+                    }
+            Console.WriteLine("Центр аргументов кроме максимума: " + string.Join("; ", centerOfGravityXc));
             // Координаты отраженной вершины
+            Console.Write("Отражённая вершина = f(");
             for (int i = 0; i < n; i++)
+            {
                 reflectedVertex[i] = 2 * centerOfGravityXc[i] - start[i];
-            Console.WriteLine("Значение в отражённой вершине: " + TargetFunction(reflectedVertex));
+                Console.Write($"2 * {centerOfGravityXc[i]} + {start[i]};");
+            }
+            Console.WriteLine($") = f({string.Join("; ", centerOfGravityXc)}) = {TargetFunction(reflectedVertex)}");
             if (TargetFunction(reflectedVertex) < TargetFunction(start))
             {
                 for (int i = 0; i < reflectedVertex.Length; i++)
@@ -70,10 +76,10 @@ public static class Simplex
             }
             else
             {
-                Console.WriteLine("редукция");
                 for (int i = 0; i < tableSimplex.GetLength(0); i++)
                     arrayFuncValue[i] = tableSimplex[i, n];
                 int minVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Min());
+                Console.WriteLine($"Редукция: [{minVertex}] = {arrayFuncValue[minVertex]}");
                 for (int i = 0; i < n + 1; i++)
                     for (int t = 0; t < n + 1; t++)
                     {
