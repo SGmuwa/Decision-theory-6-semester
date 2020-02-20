@@ -45,22 +45,17 @@ public static class Simplex
             Console.WriteLine("Итерация " + iteration++);
             double[] arrayFuncValue = new double[n + 1];
             double[] centerOfGravityXc = new double[n]; // Координаты центра тяжести
-            for (int k = 0; k < n; k++)
-                centerOfGravityXc[k] = 0;
             double[] reflectedVertex = new double[n]; // Координаты отраженной вершины
-            for (int i = 0; i < n + 1; i++)
-                for (int t = 0; t < n + 1; t++)
-                    if (t == n)
-                        arrayFuncValue[i] = tableSimplex[i, t];
+            for (int i = 0; i < arrayFuncValue.Length; i++)
+                arrayFuncValue[i] = tableSimplex[i, n];
             int maxVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Max());
             for (int i = 0; i < n + 1; i++)
                 for (int t = 0; t < n; t++)
                     if (i == maxVertex)
                         start[t] = tableSimplex[i, t];
                     else
-                        centerOfGravityXc[t] =
-                            centerOfGravityXc[t] +
-                            ((double)1 / n) * tableSimplex[i, t];
+                        centerOfGravityXc[t] +=
+                            tableSimplex[i, t] / n;
 
             // Координаты отраженной вершины
             for (int i = 0; i < n; i++)
@@ -72,62 +67,54 @@ public static class Simplex
                 TargetFunction(reflectedVertex));
             if (TargetFunction(reflectedVertex) < TargetFunction(start))
             {
-                for (int i = 0; i < n + 1; i++)
-                    for (int j = 0; j < n; j++)
-                        if (i == maxVertex) tableSimplex[i, j] = reflectedVertex[j];
-                tableSimplex[maxVertex, n] =
-                    TargetFunction(reflectedVertex);
+                for (int j = 0; j < n; j++)
+                    tableSimplex[maxVertex, j] = reflectedVertex[j];
+                tableSimplex[maxVertex, n] = TargetFunction(reflectedVertex);
             }
             else
             {
                 Console.WriteLine("редукция");
-                for (int i = 0; i < n + 1; i++)
-                    for (int t = 0; t < n + 1; t++)
-                        if (t == n)
-                            arrayFuncValue[i] = tableSimplex[i, t];
+                for (int i = 0; i < tableSimplex.GetLength(0); i++)
+                    arrayFuncValue[i] = tableSimplex[i, n];
                 int minVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Min());
                 for (int i = 0; i < n + 1; i++)
                     for (int t = 0; t < n + 1; t++)
                     {
-                        if (t != n & i != minVertex)
+                        if (i != minVertex)
                         {
-                            start[t] = tableSimplex[i, t] =
-                                tableSimplex[minVertex, t] +
-                                ((double)1 / 2) *
-                                (tableSimplex[i, t] - tableSimplex[minVertex, t]);
+                            if (t != n)
+                            {
+                                start[t] = tableSimplex[i, t] =
+                                    tableSimplex[minVertex, t] +
+                                    ((double)1 / 2) *
+                                    (tableSimplex[i, t] - tableSimplex[minVertex, t]);
+                            }
+                            else // if (t == n)
+                                tableSimplex[i, t] = TargetFunction(start);
                         }
-                        else
-                            if (t == n & i != minVertex)
-                            tableSimplex[i, t] = TargetFunction(start);
                         for (int k = 0; k < start.Length; k++)
                             start[k] = 0;
                     }
             }
             for (int i = 0; i < centerOfGravityXc.Length; i++)
                 centerOfGravityXc[i] = 0;
-            for (int i = 0; i < n + 1; i++)
-                for (int t = 0; t < n + 1; t++)
-                    if (t < n)
-                        centerOfGravityXc[t] =
-                            centerOfGravityXc[t] +
-                            1.0 / (n + 1) * tableSimplex[i, t];
+            for (int i = 0; i < tableSimplex.GetLength(0); i++)
+                for (int t = 0; t < centerOfGravityXc.Length; t++)
+                    centerOfGravityXc[t] += tableSimplex[i, t] / tableSimplex.GetLength(0);
             Console.WriteLine(tableSimplex.TableToString());
             double centerY = TargetFunction(centerOfGravityXc);
             Console.WriteLine($"Центр тяжести симплекса: f({string.Join(", ", centerOfGravityXc)}) = {centerY}");
 
             // Проверка условий окончания поиска
             int checkEnd = 0;
-            for (int i = 0; i < n + 1; i++)
-                for (int t = 0; t < n + 1; t++)
-                    if (t == n)
-                        if (Math.Abs(tableSimplex[i, t] - centerY) < E)
-                            checkEnd++;
-            if (checkEnd == n + 1)
+            for (int i = 0; i < tableSimplex.GetLength(0); i++)
+                if (Math.Abs(tableSimplex[i, n] - centerY) < E)
+                    checkEnd++;
+                else break;
+            if (checkEnd == tableSimplex.GetLength(0))
             {
-                for (int i = 0; i < n + 1; i++)
-                    for (int t = 0; t < n + 1; t++)
-                        if (t == n)
-                            arrayFuncValue[i] = tableSimplex[i, t];
+                for (int i = 0; i < tableSimplex.GetLength(0); i++)
+                    arrayFuncValue[i] = tableSimplex[i, n];
                 int minVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Min());
                 double resultMin = tableSimplex[minVertex, n];
                 Console.WriteLine("Минимум: " + resultMin);
