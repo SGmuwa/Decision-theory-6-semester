@@ -107,7 +107,7 @@ public static class Simplex
                     centerOfGravityXc[t] += tableSimplex[i, t] / tableSimplex.GetLength(0);
             Console.WriteLine(tableSimplex.TableToString("f3"));
             double centerY = TargetFunction(centerOfGravityXc);
-            Console.WriteLine($"Центр тяжести симплекса: f({string.Join(", ", centerOfGravityXc.EveryConverter(e => e.ToString("f3")))}) = {centerY.ToString("f3")}");
+            Console.WriteLine($"Центр тяжести симплекса: f({string.Join("; ", centerOfGravityXc.EveryConverter(e => e.ToString("f3")))}) = {centerY.ToString("f3")}");
 
             // Проверка условий окончания поиска
             int checkEnd = 0;
