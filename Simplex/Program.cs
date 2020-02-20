@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 
 public static class Simplex
 {
@@ -39,7 +40,7 @@ public static class Simplex
                     if (i == tempN + 1) tableSimplex[i, j] = x[j];
             tableSimplex[tempN + 1, n] = TargetFunction(x);
         }
-        Console.WriteLine(tableSimplex.TableToString());
+        Console.WriteLine(tableSimplex.TableToString("f3"));
         while (true)
         {
             Console.WriteLine("Итерация " + iteration++);
@@ -49,7 +50,7 @@ public static class Simplex
             for (int i = 0; i < arrayFuncValue.Length; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
             int maxVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Max());
-            Console.WriteLine($"Максимум: [{maxVertex}] = {arrayFuncValue[maxVertex]}");
+            Console.WriteLine($"Максимум: [{maxVertex}] = {arrayFuncValue[maxVertex].ToString("f3")}");
             for (int t = 0; t < n; t++)
                 for (int i = 0; i < n + 1; i++)
                     if (i == maxVertex)
@@ -59,15 +60,15 @@ public static class Simplex
                         centerOfGravityXc[t] +=
                             tableSimplex[i, t] / (tableSimplex.GetLength(0) - 1);
                     }
-            Console.WriteLine("Центр аргументов кроме максимума: " + string.Join("; ", centerOfGravityXc));
+            Console.WriteLine("Центр аргументов кроме максимума: " + string.Join("; ", centerOfGravityXc.EveryConverter(e => e.ToString("f3"))));
             // Координаты отраженной вершины
             Console.Write("Отражённая вершина = f(");
             for (int i = 0; i < n; i++)
             {
                 reflectedVertex[i] = 2 * centerOfGravityXc[i] - start[i];
-                Console.Write($"2 * {centerOfGravityXc[i]} + {start[i]};");
+                Console.Write($"2 * {centerOfGravityXc[i].ToString("f3")} - {start[i].ToString("f3")};");
             }
-            Console.WriteLine($") = f({string.Join("; ", centerOfGravityXc)}) = {TargetFunction(reflectedVertex)}");
+            Console.WriteLine($") = f({string.Join("; ", reflectedVertex.EveryConverter(e => e.ToString("f3")))}) = {TargetFunction(reflectedVertex).ToString("f3")}");
             if (TargetFunction(reflectedVertex) < TargetFunction(start))
             {
                 for (int i = 0; i < reflectedVertex.Length; i++)
@@ -104,9 +105,9 @@ public static class Simplex
             for (int i = 0; i < tableSimplex.GetLength(0); i++)
                 for (int t = 0; t < centerOfGravityXc.Length; t++)
                     centerOfGravityXc[t] += tableSimplex[i, t] / tableSimplex.GetLength(0);
-            Console.WriteLine(tableSimplex.TableToString());
+            Console.WriteLine(tableSimplex.TableToString("f3"));
             double centerY = TargetFunction(centerOfGravityXc);
-            Console.WriteLine($"Центр тяжести симплекса: f({string.Join(", ", centerOfGravityXc)}) = {centerY}");
+            Console.WriteLine($"Центр тяжести симплекса: f({string.Join(", ", centerOfGravityXc.EveryConverter(e => e.ToString("f3")))}) = {centerY.ToString("f3")}");
 
             // Проверка условий окончания поиска
             int checkEnd = 0;
@@ -120,7 +121,7 @@ public static class Simplex
                     arrayFuncValue[i] = tableSimplex[i, n];
                 int minVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Min());
                 double resultMin = tableSimplex[minVertex, n];
-                Console.WriteLine("Минимум: " + resultMin);
+                Console.WriteLine("Минимум: " + resultMin.ToString("f3"));
                 return;
             }
         }
@@ -142,6 +143,12 @@ public static class Simplex
     /// <returns>Строка, представляющая объект <code>toInstert</code>.</returns>
     internal static string ToString(this object toInsert, int len, string format)
                 => string.Format(string.Format("{{0, {0} :{1}}}", len, format), toInsert);
+    
+    internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
+    {
+        foreach(var e in that)
+            yield return converter(e);
+    }
 
     /// <summary>
     /// Превращает двухмерную таблицу в строку.
