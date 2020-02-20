@@ -49,6 +49,7 @@ public static class Simplex
             for (int i = 0; i < arrayFuncValue.Length; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
             int maxVertex = Array.IndexOf(arrayFuncValue, arrayFuncValue.Max());
+            Console.WriteLine($"Максимум: [{maxVertex}] = {arrayFuncValue[maxVertex]}");
             for (int i = 0; i < n + 1; i++)
                 for (int t = 0; t < n; t++)
                     if (i == maxVertex)
@@ -60,15 +61,11 @@ public static class Simplex
             // Координаты отраженной вершины
             for (int i = 0; i < n; i++)
                 reflectedVertex[i] = 2 * centerOfGravityXc[i] - start[i];
-            Console
-                .WriteLine("Значение функции максимальной точки Симлекса: " +
-                TargetFunction(start) +
-                "; значение в отражённой вершине: " +
-                TargetFunction(reflectedVertex));
+            Console.WriteLine("Значение в отражённой вершине: " + TargetFunction(reflectedVertex));
             if (TargetFunction(reflectedVertex) < TargetFunction(start))
             {
-                for (int j = 0; j < n; j++)
-                    tableSimplex[maxVertex, j] = reflectedVertex[j];
+                for (int i = 0; i < reflectedVertex.Length; i++)
+                    tableSimplex[maxVertex, i] = reflectedVertex[i];
                 tableSimplex[maxVertex, n] = TargetFunction(reflectedVertex);
             }
             else
