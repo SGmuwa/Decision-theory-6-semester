@@ -24,21 +24,20 @@ public static class PatternSearch
         {
             for (int i = 0; i < n; i++)
                 test_point[i] = current_point[i] = base_point[i];
+            Console.Write($"Базисная\t[0]+h\t[0]-h\t[1]+h\t[1]-h\nf{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
             for (int i = 0; i < n; i++)
             {
-                for (int l = 0; l < n; l++)
-                    test_point[l] = current_point[l];
                 test_point[i] += h;
+                Console.Write($"\tf{test_point.PointToString()} = {TargetFunction(test_point).ToString("f3")}");
                 if (TargetFunction(test_point) < TargetFunction(current_point))
                     current_point[i] = test_point[i];
-                else
-                {
-                    test_point[i] = current_point[i];
-                    test_point[i] -= h;
-                    if (TargetFunction(test_point) < TargetFunction(current_point))
-                        current_point[i] = test_point[i];
-                }
+                test_point[i] = base_point[i] - h;
+                Console.Write($"\tf{test_point.PointToString()} = {TargetFunction(test_point).ToString("f3")}");
+                if (current_point[i] == base_point[i] && TargetFunction(test_point) < TargetFunction(current_point))
+                    current_point[i] = test_point[i];
+                test_point[i] = base_point[i];
             }
+            Console.WriteLine("\nCurrent: " + current_point.PointToString()); // debug
             // Сравнение с базисной точкой x0
             int flag = 0;
             for (int i = 0; i < n; i++)
@@ -63,7 +62,7 @@ public static class PatternSearch
                     for (int j = 0; j < n; j++)
                         base_point[j] = current_point[j];
                 }
-                Console.WriteLine("Базисная точка: " + current_point.PointToString());
+                Console.WriteLine($"Новая базисная точка: f{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
                 Console.WriteLine("Шаг: " + h.ToString("f3"));
             }
             Console.WriteLine();
@@ -74,7 +73,7 @@ public static class PatternSearch
 
     internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
     {
-        foreach(var e in that)
+        foreach (var e in that)
             yield return converter(e);
     }
 
