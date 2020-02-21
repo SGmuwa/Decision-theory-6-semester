@@ -39,7 +39,7 @@ public static class PatternSearch
                     current_point[i] = test_point[i];
                 test_point[i] = base_point[i];
             }
-            Console.WriteLine($"\nМинимальная точка: f{current_point.PointToString()} = {TargetFunction(current_point)}"); // debug
+            Console.WriteLine($"\nМинимальная точка: f{current_point.PointToString()} = {TargetFunction(current_point).ToString("f3")}"); // debug
             // Сравнение с базисной точкой x0
             if (base_point.SequenceEqual(current_point))
             { // Если х1 = х0, то уменьшаем шаг
