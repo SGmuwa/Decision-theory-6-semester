@@ -22,9 +22,9 @@ public static class Simplex
         tableSimplex[0, n] = TargetFunction(start);
 
         double increment1 =
-            (double)(Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
+            (Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
         double increment2 =
-            (double)(Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2)) * m;
+            (Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2)) * m;
 
         //Вычисление координат остальных вершин симплекса
         for (int tempN = 0; tempN < n; tempN++)
