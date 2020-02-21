@@ -23,64 +23,53 @@ public static class PatternSearch
         do
         {
             for (int i = 0; i < n; i++)
+                test_point[i] = current_point[i] = base_point[i];
+            for (int i = 0; i < n; i++)
             {
-                if (i == 0)
-                    for (int j = 0; j < n; j++)
-                    {
-                        test_point[j] = base_point[j];
-                        current_point[j] = base_point[j];
-                    }
                 for (int l = 0; l < n; l++)
                     test_point[l] = current_point[l];
-                double temp = test_point[i];
-                test_point[i] = temp + h;
+                test_point[i] += h;
                 if (TargetFunction(test_point) < TargetFunction(current_point))
-                    for (int j = 0; j < n; j++)
-                        current_point[j] = test_point[j];
+                    current_point[i] = test_point[i];
                 else
                 {
-                    for (int j = 0; j < n; j++)
-                        test_point[j] = current_point[j];
-                    temp = test_point[i];
-                    test_point[i] = temp - h;
+                    test_point[i] = current_point[i];
+                    test_point[i] -= h;
                     if (TargetFunction(test_point) < TargetFunction(current_point))
-                        for (int j = 0; j < n; j++)
-                            current_point[j] = test_point[j];
+                        current_point[i] = test_point[i];
                 }
             }
             // Сравнение с базисной точкой x0
             int flag = 0;
             for (int i = 0; i < n; i++)
                 if (base_point[i] == current_point[i])
-                    flag += 1;
+                    flag++;
             if (flag == n)
             { // Если х1 = х0, то уменьшаем шаг
                 h /= d;
-                Console.WriteLine("НЕ нашли точку (x0=x1)");
-                Console.WriteLine("Уменьшение шага, H = " + h.ToString("f3") + "\n\n");
+                Console.WriteLine("Уменьшение шага");
             }
             else
             { // Если х1!=х0, то поиск по образцу
-                Console.WriteLine("Новая базисная точка x1: " + current_point.PointToString());
                 for (int j = 0; j < n; j++)
                     xP[j] = current_point[j] + m * (current_point[j] - base_point[j]);
                 if (TargetFunction(xP) < TargetFunction(current_point))
                 {
                     for (int j = 0; j < n; j++)
                         base_point[j] = xP[j];
-                    Console.WriteLine("Базисная точка х0 = хр: " + base_point.PointToString());
                 }
                 else
                 {
                     for (int j = 0; j < n; j++)
                         base_point[j] = current_point[j];
-                    Console.WriteLine("Базисная точка х0 = х1: " + base_point.PointToString());
                 }
-                Console.WriteLine("Шаг  " + h.ToString("f3") + "\n");
+                Console.WriteLine("Базисная точка: " + current_point.PointToString());
+                Console.WriteLine("Шаг: " + h.ToString("f3"));
             }
+            Console.WriteLine();
         } while (h >= E);
-        Console.WriteLine("Шаг = " + h.ToString("f3") + " < E = " + E.ToString("f3"));
-        Console.WriteLine("Минимальная точка:" + TargetFunction(base_point).ToString("f3"));
+        Console.WriteLine($"Шаг < E ({h.ToString("f3")} < {E.ToString("f3")})");
+        Console.WriteLine($"Минимальная точка: f{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
     }
 
     internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
