@@ -9,9 +9,9 @@ public static class Simplex
     {
         int iteration = 0; // Счётчик итераций
         int n = 2;
-        double E = 0.75;
+        double E = 0.1875;
         double m = 0.25;
-        double[] start = { 1, 1 };
+        double[] start = { 0.5, 0.5 };
         double[,] tableSimplex = new double[n + 1, n + 1];
         for (int i = 0; i < n + 1; i++)
             for (int j = 0; j < n; j++)
