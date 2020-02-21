@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public static class PatternSearch
@@ -22,6 +23,7 @@ public static class PatternSearch
         // Считаем тестовую, если она больше текущей, то производится поиск по следующим направлениям и координатам
         do
         {
+            Console.WriteLine("Шаг: " + h.ToString("f3"));
             for (int i = 0; i < n; i++)
                 test_point[i] = current_point[i] = base_point[i];
             Console.Write($"Базисная\t[0]+h\t[0]-h\t[1]+h\t[1]-h\nf{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
@@ -37,33 +39,25 @@ public static class PatternSearch
                     current_point[i] = test_point[i];
                 test_point[i] = base_point[i];
             }
-            Console.WriteLine("\nCurrent: " + current_point.PointToString()); // debug
+            Console.WriteLine($"\nМинимальная точка: f{current_point.PointToString()} = {TargetFunction(current_point)}"); // debug
             // Сравнение с базисной точкой x0
-            int flag = 0;
-            for (int i = 0; i < n; i++)
-                if (base_point[i] == current_point[i])
-                    flag++;
-            if (flag == n)
+            if (base_point.SequenceEqual(current_point))
             { // Если х1 = х0, то уменьшаем шаг
+                Console.WriteLine($"Уменьшение шага: {h.ToString("f3")} / {d.ToString("f3")} = {(h / d).ToString("f3")}");
                 h /= d;
-                Console.WriteLine("Уменьшение шага");
             }
             else
             { // Если х1!=х0, то поиск по образцу
                 for (int j = 0; j < n; j++)
                     xP[j] = current_point[j] + m * (current_point[j] - base_point[j]);
+                Console.WriteLine($"Поиск по образцу: f({current_point.PointToString()} + {m.ToString("f3")} * ({current_point.PointToString()} - {base_point.PointToString()})) = f{xP.PointToString()} = {TargetFunction(xP).ToString("f3")}");
                 if (TargetFunction(xP) < TargetFunction(current_point))
-                {
                     for (int j = 0; j < n; j++)
                         base_point[j] = xP[j];
-                }
                 else
-                {
                     for (int j = 0; j < n; j++)
                         base_point[j] = current_point[j];
-                }
                 Console.WriteLine($"Новая базисная точка: f{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
-                Console.WriteLine("Шаг: " + h.ToString("f3"));
             }
             Console.WriteLine();
         } while (h >= E);
