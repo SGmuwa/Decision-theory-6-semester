@@ -29,15 +29,14 @@ public static class PatternSearch
             Console.Write($"Базисная\t[0]+h\t[0]-h\t[1]+h\t[1]-h\nf{base_point.PointToString()} = {TargetFunction(base_point).ToString("f3")}");
             for (int i = 0; i < n; i++)
             {
-                test_point[i] += h;
+                test_point[i] = base_point[i] + h;
                 Console.Write($"\tf{test_point.PointToString()} = {TargetFunction(test_point).ToString("f3")}");
                 if (TargetFunction(test_point) < TargetFunction(current_point))
                     current_point[i] = test_point[i];
                 test_point[i] = base_point[i] - h;
                 Console.Write($"\tf{test_point.PointToString()} = {TargetFunction(test_point).ToString("f3")}");
-                if (current_point[i] == base_point[i] && TargetFunction(test_point) < TargetFunction(current_point))
+                if (current_point[i] != base_point[i] && TargetFunction(test_point) < TargetFunction(current_point))
                     current_point[i] = test_point[i];
-                test_point[i] = base_point[i];
             }
             Console.WriteLine($"\nМинимальная точка: f{current_point.PointToString()} = {TargetFunction(current_point).ToString("f3")}"); // debug
             // Сравнение с базисной точкой x0
