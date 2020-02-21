@@ -34,7 +34,7 @@ public class PatternSearch
                     test_point[l] = current_point[l]; //x1
                 double temp = test_point[i];
                 test_point[i] = temp + h;
-                if (objectiveFunction(test_point) < objectiveFunction(current_point))
+                if (TargetFunction(test_point) < TargetFunction(current_point))
                     for (int j = 0; j < n; j++)
                     {
                         current_point[j] = test_point[j];
@@ -45,7 +45,7 @@ public class PatternSearch
                         test_point[j] = current_point[j];
                     temp = test_point[i];
                     test_point[i] = temp - h;
-                    if (objectiveFunction(test_point) < objectiveFunction(current_point))
+                    if (TargetFunction(test_point) < TargetFunction(current_point))
                     {
                         for (int j = 0; j < n; j++)
                         {
@@ -71,7 +71,7 @@ public class PatternSearch
                 Console.Write("Новая базисная точка x1: " + current_point[0] + "   " + current_point[1] + "\n");
                 for (int j = 0; j < n; j++)
                     xP[j] = current_point[j] + (double)m * (current_point[j] - base_point[j]);
-                if (objectiveFunction(xP) < objectiveFunction(current_point))
+                if (TargetFunction(xP) < TargetFunction(current_point))
                 {
                     for (int j = 0; j < n; j++)
                         base_point[j] = xP[j];
@@ -87,14 +87,15 @@ public class PatternSearch
                 if (h < E)
                 {
                     Console.WriteLine("Шаг = " + h + " < E = " + E);
-                    Console.WriteLine("Минимальная точка:" + objectiveFunction(base_point));
+                    Console.WriteLine("Минимальная точка:" + TargetFunction(base_point));
                     k = false;
                 }
             }
         }
     }
-    public static double objectiveFunction(double[] mas)
-    {
-        return ((double)13 / 5) * (Math.Pow(mas[0], 2)) - ((double)21 / 10) * mas[1] + ((double)7 / 5) * (Math.Pow(mas[1], 2));
-    }
+    public static double TargetFunction(double[] mas)
+        => -3.3 * mas[0] +
+        5.2 * Math.Pow(mas[0], 2) -
+        4.2 * mas[1] +
+        2.8 * Math.Pow(mas[1], 2);
 }
