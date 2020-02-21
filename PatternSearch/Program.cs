@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 
-public class PatternSearch
+public static class PatternSearch
 {
     public static void Main(string[] args)
     {
@@ -10,7 +11,7 @@ public class PatternSearch
         double m = 0.5; // Ускоряющий множитель
         double h = 0.2; // Шаг
 
-        double[] base_point = new double[n]; // Координаты базисной точки
+        double[] base_point = new double[n]; // Координаты центральной точки
         double[] xP = new double[n]; // Координаты точки для поиска по образцу
         double[] current_point = new double[n];
         double[] test_point = new double[n]; // Координаты тестовых точек временно хранятся в этом массиве
@@ -19,8 +20,7 @@ public class PatternSearch
             base_point[i] = 0;
 
         // Считаем тестовую, если она больше текущей, то производится поиск по следующим направлениям и координатам
-        bool k = true;
-        while (k)
+        do
         {
             for (int i = 0; i < n; i++)
             {
@@ -36,9 +36,7 @@ public class PatternSearch
                 test_point[i] = temp + h;
                 if (TargetFunction(test_point) < TargetFunction(current_point))
                     for (int j = 0; j < n; j++)
-                    {
                         current_point[j] = test_point[j];
-                    }
                 else
                 {
                     for (int j = 0; j < n; j++)
@@ -46,12 +44,8 @@ public class PatternSearch
                     temp = test_point[i];
                     test_point[i] = temp - h;
                     if (TargetFunction(test_point) < TargetFunction(current_point))
-                    {
                         for (int j = 0; j < n; j++)
-                        {
                             current_point[j] = test_point[j];
-                        }
-                    }
                 }
             }
             // Сравнение с базисной точкой x0
@@ -61,38 +55,43 @@ public class PatternSearch
                     flag += 1;
             if (flag == n)
             { // Если х1 = х0, то уменьшаем шаг
-                double tempH = h;
-                h = (double)tempH / d;
+                h /= d;
                 Console.WriteLine("НЕ нашли точку (x0=x1)");
-                Console.WriteLine("Уменьшение шага, H = " + h + "\n\n");
+                Console.WriteLine("Уменьшение шага, H = " + h.ToString("f3") + "\n\n");
             }
             else
             { // Если х1!=х0, то поиск по образцу
-                Console.Write("Новая базисная точка x1: " + current_point[0] + "   " + current_point[1] + "\n");
+                Console.WriteLine("Новая базисная точка x1: " + current_point.PointToString());
                 for (int j = 0; j < n; j++)
-                    xP[j] = current_point[j] + (double)m * (current_point[j] - base_point[j]);
+                    xP[j] = current_point[j] + m * (current_point[j] - base_point[j]);
                 if (TargetFunction(xP) < TargetFunction(current_point))
                 {
                     for (int j = 0; j < n; j++)
                         base_point[j] = xP[j];
-                    Console.WriteLine("Базисная точка х0 = хр: " + base_point[0] + "  " + base_point[1]);
+                    Console.WriteLine("Базисная точка х0 = хр: " + base_point.PointToString());
                 }
                 else
                 {
                     for (int j = 0; j < n; j++)
                         base_point[j] = current_point[j];
-                    Console.WriteLine("Базисная точка х0 = х1: " + base_point[0] + "  " + base_point[1]);
+                    Console.WriteLine("Базисная точка х0 = х1: " + base_point.PointToString());
                 }
-                Console.Write("Шаг  " + h + "\n \n");
-                if (h < E)
-                {
-                    Console.WriteLine("Шаг = " + h + " < E = " + E);
-                    Console.WriteLine("Минимальная точка:" + TargetFunction(base_point));
-                    k = false;
-                }
+                Console.WriteLine("Шаг  " + h.ToString("f3") + "\n");
             }
-        }
+        } while (h >= E);
+        Console.WriteLine("Шаг = " + h.ToString("f3") + " < E = " + E.ToString("f3"));
+        Console.WriteLine("Минимальная точка:" + TargetFunction(base_point).ToString("f3"));
     }
+
+    internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
+    {
+        foreach(var e in that)
+            yield return converter(e);
+    }
+
+    public static string PointToString(this double[] that)
+        => $"({string.Join("; ", that.EveryConverter(e => e.ToString("f3")))})";
+
     public static double TargetFunction(double[] mas)
         => -3.3 * mas[0] +
         5.2 * Math.Pow(mas[0], 2) -
