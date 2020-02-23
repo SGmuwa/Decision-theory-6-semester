@@ -52,7 +52,7 @@ public static class NelderMead
             double minValue = tableSimplex[minValObjFunction, n];
             Console.WriteLine("\n\nМаксимальное значение Fh = " + maxValue);
             Console.WriteLine("Следующее за максимальным значением Fs = " + followMaxValue);
-            Console.WriteLine("Минимальнок значение Fl = " + minValue);
+            Console.WriteLine("Минимальное значение Fl = " + minValue);
 
             int currentId = maxVertex;
 
@@ -61,8 +61,10 @@ public static class NelderMead
             {
                 for (int t = 0; t < n; t++)
                 {
-                    if (i == maxVertex) mas[t] = tableSimplex[i, t];
-                    else centerOfGravityXc[t] = centerOfGravityXc[t] + ((double)1 / n) * tableSimplex[i, t];
+                    if (i == maxVertex)
+                        mas[t] = tableSimplex[i, t];
+                    else
+                        centerOfGravityXc[t] = centerOfGravityXc[t] + tableSimplex[i, t] / n;
                 }
             }
             //Находим координаты отраженной вершины.
@@ -108,30 +110,30 @@ public static class NelderMead
                                 if (i == currentId) { tableSimplex[i, j] = newVertexsStretch[j]; }
                         tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
                         Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
-                        bool proove = punkt12(tableSimplex, n, E);
-                        if (proove == true) return;
+                        bool proof = Task12(tableSimplex, n, E);
+                        if (proof == true) return;
                     }
                     else
                     {
                         currentF = TargetFunction(newVertexsStretch);//
-                        bool proove = punkt9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-                        if (proove == true) return;
+                        bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+                        if (proof == true) return;
                     }
                 }
                 else
                 {
-                    bool proove = punkt9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-                    if (proove == true) return;
+                    bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+                    if (proof == true) return;
                 }
             }
             else
             {
-                bool proove = punkt9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-                if (proove == true) return;
+                bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+                if (proof == true) return;
             }
         }
     }
-    public static bool punkt9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
+    public static bool Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
     {
         Console.WriteLine("Следующее за максимальным = " + followMaxValue + " \t f(x) = " + currentF + "\t максимальное = " + maxValue);
         double[] mas = new double[n];
@@ -139,18 +141,18 @@ public static class NelderMead
         if (currentF < maxValue & currentF > followMaxValue)
         {
             // Сжатие симплекса.
-            double[] newVertexsCompress = new double[n];
+            double[] newVerticesCompress = new double[n];
             for (int i = 0; i < n + 1; i++)
                 for (int j = 0; j < n; j++)
                     if (i == currentId) mas[j] = tableSimplex[i, j];
             for (int r = 0; r < n; r++)
             {
-                newVertexsCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
+                newVerticesCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
             }
-            Console.WriteLine("Сжатая вершина: " + newVertexsCompress[0] + "   " + newVertexsCompress[1] + "	" + TargetFunction(newVertexsCompress));
+            Console.WriteLine("Сжатая вершина: " + newVerticesCompress[0] + "   " + newVerticesCompress[1] + "	" + TargetFunction(newVerticesCompress));
             Console.WriteLine("ТУТ" + tableSimplex[currentId, n] + "   " + currentId);
             // Пункт 10:
-            if (TargetFunction(newVertexsCompress) < tableSimplex[currentId, n])
+            if (TargetFunction(newVerticesCompress) < tableSimplex[currentId, n])
             {
                 // Заменяем вершину в таблице
                 int tempInd = -1;
@@ -158,13 +160,13 @@ public static class NelderMead
                     for (int j = 0; j < n; j++)
                         if (i == currentId)
                         {
-                            tableSimplex[i, j] = newVertexsCompress[j];
+                            tableSimplex[i, j] = newVerticesCompress[j];
                             tempInd = i;
                         }
-                tableSimplex[tempInd, n] = TargetFunction(newVertexsCompress);
+                tableSimplex[tempInd, n] = TargetFunction(newVerticesCompress);
                 // Пункт 12:
-                bool proove = punkt12(tableSimplex, n, E);
-                if (proove == true) return true;
+                bool proof = Task12(tableSimplex, n, E);
+                if (proof == true) return true;
             }
             // Пункт 11:
             else
@@ -195,8 +197,8 @@ public static class NelderMead
                     }
                 // Вывод таблицы.
                 Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
-                bool proove = punkt12(tableSimplex, n, E);
-                if (proove == true) return true;
+                bool proof = Task12(tableSimplex, n, E);
+                if (proof == true) return true;
             }
         }
         else
@@ -228,13 +230,13 @@ public static class NelderMead
                 }
             // Вывод таблицы.
             Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
-            bool proove = punkt12(tableSimplex, n, E);
-            if (proove == true) return true;
+            bool proof = Task12(tableSimplex, n, E);
+            if (proof == true) return true;
         }
         return false;
     }
 
-    public static bool punkt12(double[,] tableSimplex, int n, double E)
+    public static bool Task12(double[,] tableSimplex, int n, double E)
     {
         // Найдем центр тяжести всего симплекса.
         Console.WriteLine("\n\nПроверка окончания поиска");
