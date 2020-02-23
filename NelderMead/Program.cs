@@ -4,7 +4,7 @@ public class NelderMead
 {
 	public static void Main(string[] args)
 	{
-		int n = 2; int tempN = 0;
+		int n = 2;
 		double E = 0.1;
 		double m = 1.0; // Длина ребра многогранника.
 		double B = 2.8; // Коэффициент растяжения.
@@ -15,26 +15,19 @@ public class NelderMead
 
 		double[,] tableSimplex = new double[n + 1, n + 1];
 
-		for (int i = 0; i < n + 1; i++)
-			for (int j = 0; j < n; j++)
-				if (i == 0) tableSimplex[i, j] = mas[j];
-				else tableSimplex[i, j] = -0;
+		for (int j = 0; j < n; j++)
+			tableSimplex[0, j] = mas[j];
 		tableSimplex[0, n] = TargetFunction(mas);
 		// Приращения.
-		double increment1 = (double)(Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
-		double increment2 = (double)(Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2)) * m;
+		double increment1 = (Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
+		double increment2 = (Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2)) * m;
 		// Находим координаты остальных вершин.
-		while (tempN < n)
+
+		for (int i = 0; i < n; i++)
 		{
-			double[] x = new double[n];
-			for (int i = 0; i < n; i++)
-				if (tempN == i) x[i] = increment1 + mas[i];
-				else x[i] = increment2 + mas[i];
-			for (int i = 0; i < n + 1; i++)
-				for (int j = 0; j < n; j++)
-					if (i == tempN + 1) tableSimplex[i, j] = x[j];
-			tableSimplex[tempN + 1, n] = TargetFunction(x);
-			tempN++;
+			for (int j = 0; j < n; j++)
+				tableSimplex[i + 1, j] = (i == j ? increment1 : increment2) + mas[j];
+			tableSimplex[i + 1, n] = TargetFunction(tableSimplex[i + 1, 0], tableSimplex[i + 1, 1]);
 		}
 		// Вывод таблицы.
 		for (int i = 0; i < n + 1; i++)
@@ -320,11 +313,16 @@ public class NelderMead
 			Console.WriteLine();
 		}
 	}
-	public static double TargetFunction(double[] mas)
-		=> -3.3 * mas[0] +
-		5.2 * Math.Pow(mas[0], 2) -
-		4.2 * mas[1] +
-		2.8 * Math.Pow(mas[1], 2);
+
+	public static double TargetFunction(double x, double y)
+		=> -3.3 * x +
+		5.2 * Math.Pow(x, 2) -
+		4.2 * y +
+		2.8 * Math.Pow(y, 2);
+
+	public static double TargetFunction(double[] args)
+		=> TargetFunction(args[0], args[1]);
+
 	public static int maxSearch(double[] mas)
 	{
 		double max = mas[0]; int ind = 0;
