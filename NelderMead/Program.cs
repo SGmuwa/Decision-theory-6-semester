@@ -9,23 +9,18 @@ public static class NelderMead
     {
         Task1(out int n, out double E, out double m, out double B, out double Y, out double[] mas, out double[,] tableSimplex);
         Task2(tableSimplex, n, mas, m);
-        do
-        {
-            Task3(tableSimplex, n, mas, B, Y, E);
-            int currentId = maxVertex;
-            Console.WriteLine("\n\nМаксимальное значение Fh = " + maxVertex.Value);
-            Console.WriteLine("Следующее за максимальным значением Fs = " + followMaxIndex.Value);
-            Console.WriteLine("Минимальное значение Fl = " + minValObjFunction.Value);
-            var centerOfGravityXc = Task4(tableSimplex, n, maxVertex, mas);
-            //Находим координаты отраженной вершины.
-            for (int i = 0; i < n; i++)
-            {
-                reflectedVertex[i] = 2 * centerOfGravityXc[i] - mas[i];
-            }
-            double fReflected = TargetFunction(reflectedVertex);
-            Console.WriteLine("Значение функции в отраженной вершине: " + fReflected);
-            double currentF = fReflected;
-        } while (Task6(ref currentF, fReflected, maxValue, n, tableSimplex, maxVertex, reflectedVertex, minValue, mas, currentId, centerOfGravityXc, B, Y, E, followMaxValue));
+    t3:
+        ((int I, double Value) max, (int I, double Value) min, (int I, double Value) followMax) = Task3(tableSimplex, n, mas, B, Y, E);
+        int currentId = max.I;
+        Console.WriteLine("\n\nМаксимальное значение Fh = " + max.Value);
+        Console.WriteLine("Следующее за максимальным значением Fs = " + followMax.Value);
+        Console.WriteLine("Минимальное значение Fl = " + min.Value);
+        double[] centerOfGravityXc = Task4(tableSimplex, n, max.I, mas);
+        (double[] reflectedVertex, double fReflected) = Task5(centerOfGravityXc, mas);
+        Console.WriteLine("Значение функции в отражённой вершине: " + fReflected);
+        double currentF = fReflected;
+        if(Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value))
+            goto t3;
     }
 
     /// <summary>
@@ -69,40 +64,26 @@ public static class NelderMead
         Console.WriteLine(tableSimplex.TableToString("f3"));
     }
 
-    struct ArgValue
-    {
-        public ArgValue(double[] arr)
-        {
-            Arg = Array.AsReadOnly(arr);
-            Value = TargetFunction(arr);
-        }
-
-        public ArgValue(double[,] tableSimplex, int line)
-        {
-            double[] arr = new double[tableSimplex.GetLength(1) - 1];
-            for(int i = 0; i < arr.Length; i++)
-                arr[i] = tableSimplex[line, i];
-            Arg = Array.AsReadOnly(arr);
-            Value = tableSimplex[line, tableSimplex.GetLength(1) - 1];
-        }
-
-        public ReadOnlyCollection<double> Arg;
-        public double Value;
-    }
-
     /// <summary>
     /// Определить номера k вершин.
     /// </summary>
-    public static void Task3(in double[,] tableSimplex, in int n, in double[] mas, in double B, in double Y, in double E)
+    public static ((int I, double Value) maxVertex, (int I, double Value) minValObjFunction, (int I, double Value) followMaxIndex) Task3(in double[,] tableSimplex, in int n, in double[] mas, in double B, in double Y, in double E)
     {
         double[] arrayFuncValue = new double[n + 1];
 
         for (int i = 0; i < n + 1; i++)
             arrayFuncValue[i] = tableSimplex[i, n];
+        
+        (int I, double Value) max, min, followMax;
+        min.I = SearchMin(arrayFuncValue);
+        min.Value = TargetFunction(tableSimplex[min.I, 0], tableSimplex[min.I, 1]);
+        max.I = SearchMax(arrayFuncValue);
+        max.Value = TargetFunction(tableSimplex[max.I, 0], tableSimplex[max.I, 1]);
+        followMax.I = SearchFollowMax(arrayFuncValue);
+        followMax.Value = TargetFunction(tableSimplex[followMax.I, 0], tableSimplex[followMax.I, 1]);
+
         // Определяем максимальную, минимальную и следующую за максимальной вершиной.
-        ArgValue maxVertex = new ArgValue(tableSimplex, SearchMax(arrayFuncValue));
-        ArgValue minValObjFunction = new ArgValue(tableSimplex, SearchMin(arrayFuncValue));
-        ArgValue followMaxIndex = new ArgValue(tableSimplex, followMaxValueSearch(arrayFuncValue));
+        return (max, min, followMax);
     }
 
     public static double[] Task4(in double[,] tableSimplex, int n, int maxVertex, double[] mas)
@@ -118,6 +99,15 @@ public static class NelderMead
         return centerOfGravityXc;
     }
 
+    public static (double[] reflectedVertex, double fReflected) Task5(double[] centerOfGravityXc, double[] mas)
+    {
+        double[] reflectedVertex = new double[centerOfGravityXc.Length];
+        //Находим координаты отраженной вершины.
+        for (int i = 0; i < centerOfGravityXc.Length; i++)
+            reflectedVertex[i] = 2 * centerOfGravityXc[i] - mas[i];
+        return (reflectedVertex, TargetFunction(reflectedVertex));
+    }
+
     public static bool Task6(ref double currentF, in double fReflected, in double maxValue, in int n, in double[,] tableSimplex, in int maxVertex, in double[] reflectedVertex, in double minValue, in double[] mas, in int currentId, in double[] centerOfGravityXc, in double B, in double Y, in double E, in double followMaxValue)
     {
         if (fReflected < maxValue)
@@ -129,7 +119,7 @@ public static class NelderMead
                     if (i == maxVertex) { tableSimplex[i, j] = reflectedVertex[j]; }
             tableSimplex[maxVertex, n] = fReflected;
             Console.WriteLine($"После замены вершины на отраженную:\n{tableSimplex.TableToString("f3")}");
-            Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
+            return !Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
         }
         else
         {
@@ -139,7 +129,7 @@ public static class NelderMead
         return true;
     }
 
-    public static void Task7(ref double currentF, in double minValue, in int n, in int currentId, in double[] mas, in double[,] tableSimplex, in double[] centerOfGravityXc, in double maxValue, in double followMaxValue, in double B, in double E, in double Y)
+    public static bool Task7(ref double currentF, in double minValue, in int n, in int currentId, in double[] mas, in double[,] tableSimplex, in double[] centerOfGravityXc, in double maxValue, in double followMaxValue, in double B, in double E, in double Y)
     {
         // Пункт 7:
         if (currentF < minValue)
@@ -165,20 +155,21 @@ public static class NelderMead
                 tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
                 Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
                 bool proof = Task12(tableSimplex, n, E);
-                if (proof == true) return;
+                if (proof == true) return true;
             }
             else
             {
                 currentF = TargetFunction(newVertexsStretch);//
                 bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-                if (proof == true) return;
+                if (proof == true) return true;
             }
         }
         else
         {
             bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-            if (proof == true) return;
+            if (proof == true) return true;
         }
+        return false;
     }
 
     public static bool Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
@@ -331,7 +322,7 @@ public static class NelderMead
 
     public static double TargetFunction(double[] args)
         => TargetFunction(args[0], args[1]);
-    
+
     public static double TargetFunction(IEnumerable<double> args)
     {
         using IEnumerator<double> e = args.GetEnumerator();
@@ -351,7 +342,7 @@ public static class NelderMead
                 max = arr[ind = i];
         return ind;
     }
-    public static int followMaxValueSearch(double[] mas)
+    public static int SearchFollowMax(double[] mas)
     {
         double max = mas[0];
         double follow = max;
