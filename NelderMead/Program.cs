@@ -43,8 +43,8 @@ public static class NelderMead
             for (int i = 0; i < n + 1; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
             // Определяем максимальную, минимальную и следующую за максимальной вершиной.
-            int maxVertex = maxSearch(arrayFuncValue);
-            int minValObjFunction = minSearch(arrayFuncValue);
+            int maxVertex = SearchMax(arrayFuncValue);
+            int minValObjFunction = SearchMin(arrayFuncValue);
             int followMaxIndex = followMaxValueSearch(arrayFuncValue);
 
             double maxValue = tableSimplex[maxVertex, n];
@@ -176,7 +176,7 @@ public static class NelderMead
                         if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
                     }
                 }
-                int minVertex = minSearch(arrayFuncValue);
+                int minVertex = SearchMin(arrayFuncValue);
                 Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
                 for (int i = 0; i < n + 1; i++)
                     for (int t = 0; t < n + 1; t++)
@@ -209,7 +209,7 @@ public static class NelderMead
                     if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
                 }
             }
-            int minVertex = minSearch(arrayFuncValue);
+            int minVertex = SearchMin(arrayFuncValue);
             Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
             for (int i = 0; i < n + 1; i++)
                 for (int t = 0; t < n + 1; t++)
@@ -261,7 +261,7 @@ public static class NelderMead
             for (int i = 0; i < n + 1; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
 
-            int min = minSearch(arrayFuncValue);
+            int min = SearchMin(arrayFuncValue);
             double resultMin = tableSimplex[min, n];
             Console.WriteLine("Минимальная вершина: " + resultMin);
             return true;
@@ -282,29 +282,49 @@ public static class NelderMead
     public static double TargetFunction(double[] args)
         => TargetFunction(args[0], args[1]);
 
-    public static int maxSearch(double[] mas)
+    public static int SearchMax(double[] arr)
     {
-        double max = mas[0]; int ind = 0;
-        for (int i = 1; i < mas.Length; i++)
-            if (max < mas[i]) { max = mas[i]; ind = i; }
+        double max = arr[0];
+        int ind = 0;
+        for (int i = 1; i < arr.Length; i++)
+            if (max < arr[i])
+                max = arr[ind = i];
         return ind;
     }
     public static int followMaxValueSearch(double[] mas)
     {
-        double max = mas[0]; double follow = max; int indMax = 0; int indFollow = 0;
+        double max = mas[0];
+        double follow = max;
+        int indMax = 0;
+        int indFollow = 0;
+        if (max < mas[1])
+        {
+            follow = max;
+            max = mas[1];
+            indMax = 1;
+            indFollow = 0;
+        }
         for (int i = 1; i < mas.Length; i++)
         {
-            if (i == 1 & max < mas[i]) { follow = max; max = mas[i]; indMax = i; indFollow = 0; }
-            if (mas[i] > max) { follow = max; indFollow = indMax; max = mas[i]; indMax = i; }
-            if (mas[i] < max & mas[i] > follow) { follow = mas[i]; indFollow = i; }
+            if (mas[i] > max)
+            {
+                follow = max;
+                indFollow = indMax;
+                max = mas[i];
+                indMax = i;
+            }
+            if (mas[i] < max && mas[i] > follow)
+                follow = mas[indFollow = i];
         }
         return indFollow;
     }
-    public static int minSearch(double[] mas)
+    public static int SearchMin(double[] arr)
     {
-        double min = mas[0]; int ind = 0;
-        for (int i = 1; i < mas.Length; i++)
-            if (min > mas[i]) { min = mas[i]; ind = i; }
+        double min = arr[0];
+        int ind = 0;
+        for (int i = 1; i < arr.Length; i++)
+            if (min > arr[i])
+                min = arr[ind = i];
         return ind;
     }
 
