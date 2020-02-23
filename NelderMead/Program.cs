@@ -5,17 +5,32 @@ public static class NelderMead
 {
     public static void Main(string[] args)
     {
-        int n = 2;
-        double E = 0.1;
-        double m = 1.0; // Длина ребра многогранника.
-        double B = 2.8; // Коэффициент растяжения.
-        double Y = 0.4; // Коэффициент сжатия.
-        double[] mas = new double[n];
+        Task1(out int n, out double E, out double m, out double B, out double Y, out double[] mas, out double[,] tableSimplex);
+        Task2(tableSimplex, n, mas, m);
+        Task3(tableSimplex, n, mas, B, Y, E);
+    }
+
+    /// <summary>
+    /// Задать начальные денные.
+    /// </summary>
+    public static void Task1(out int n, out double E, out double m, out double B, out double Y, out double[] mas, out double[,] tableSimplex)
+    {
+        n = 2;
+        E = 0.1;
+        m = 1.0; // Длина ребра многогранника.
+        B = 2.8; // Коэффициент растяжения.
+        Y = 0.4; // Коэффициент сжатия.
+        mas = new double[n];
         mas[0] = 0.275;
         mas[1] = 0.8058;
+        tableSimplex = new double[n + 1, n + 1];
+    }
 
-        double[,] tableSimplex = new double[n + 1, n + 1];
-
+    /// <summary>
+    /// Построить начальный многогранник.
+    /// </summary>
+    public static void Task2(in double[,] tableSimplex, int n, in double[] mas, in double m)
+    {
         for (int j = 0; j < n; j++)
             tableSimplex[0, j] = mas[j];
         tableSimplex[0, n] = TargetFunction(mas);
@@ -32,11 +47,12 @@ public static class NelderMead
         }
         // Вывод таблицы.
         Console.WriteLine(tableSimplex.TableToString("f3"));
-
-        Task3(n, tableSimplex, mas, B, Y, E);
     }
 
-    public static void Task3(in int n, in double[,] tableSimplex, in double[] mas, in double B, in double Y, in double E)
+    /// <summary>
+    /// Определить номера k вершин.
+    /// </summary>
+    public static void Task3(in double[,] tableSimplex, in int n, in double[] mas, in double B, in double Y, in double E)
     {
         while (true)
         {
