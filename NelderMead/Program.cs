@@ -1,6 +1,6 @@
 
 using System;
-public class TPR_6sem_2Laba
+public class NelderMead
 {
 	public static void Main(string[] args)
 	{
@@ -19,7 +19,7 @@ public class TPR_6sem_2Laba
 			for (int j = 0; j < n; j++)
 				if (i == 0) tableSimplex[i, j] = mas[j];
 				else tableSimplex[i, j] = -0;
-		tableSimplex[0, n] = objectiveFunction(mas);
+		tableSimplex[0, n] = TargetFunction(mas);
 		// Приращения.
 		double increment1 = (double)(Math.Sqrt(n + 1) - 1) / (n * Math.Sqrt(2)) * m;
 		double increment2 = (double)(Math.Sqrt(n + 1) + n - 1) / (n * Math.Sqrt(2)) * m;
@@ -33,7 +33,7 @@ public class TPR_6sem_2Laba
 			for (int i = 0; i < n + 1; i++)
 				for (int j = 0; j < n; j++)
 					if (i == tempN + 1) tableSimplex[i, j] = x[j];
-			tableSimplex[tempN + 1, n] = objectiveFunction(x);
+			tableSimplex[tempN + 1, n] = TargetFunction(x);
 			tempN++;
 		}
 		// Вывод таблицы.
@@ -88,7 +88,7 @@ public class TPR_6sem_2Laba
 			{
 				reflectedVertex[i] = 2 * centerOfGravityXc[i] - mas[i];
 			}
-			double fReflected = objectiveFunction(reflectedVertex);
+			double fReflected = TargetFunction(reflectedVertex);
 			//Console.WriteLine("\n\n"+"Центр тяжести вершин симплекса, за исключением xk: "+centerOfGravityXc[0]+" \t"+centerOfGravityXc[1]);
 			//Console.WriteLine("Координаты отраженной вершины: "+reflectedVertex[0]+"\t"+reflectedVertex[1]);
 			Console.WriteLine("Значение функции в отраженной вершине: " + fReflected);
@@ -116,16 +116,16 @@ public class TPR_6sem_2Laba
 					{
 						newVertexsStretch[r] = centerOfGravityXc[r] + B * (mas[r] - centerOfGravityXc[r]);
 					}
-					Console.WriteLine("Значение функции после растяжения: " + objectiveFunction(newVertexsStretch));
+					Console.WriteLine("Значение функции после растяжения: " + TargetFunction(newVertexsStretch));
 					// Пункт 8:
-					if (objectiveFunction(newVertexsStretch) < currentF)
+					if (TargetFunction(newVertexsStretch) < currentF)
 					{
 						Console.WriteLine("Пункт 8");
 						// Заменяем вершину в таблице.
 						for (int i = 0; i < n + 1; i++)
 							for (int j = 0; j < n; j++)
 								if (i == currentId) { tableSimplex[i, j] = newVertexsStretch[j]; }
-						tableSimplex[currentId, n] = objectiveFunction(newVertexsStretch);
+						tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
 						Console.WriteLine("После замены вершины на отраженную:");
 						printMatrix(tableSimplex, n);
 						bool proove = punkt12(tableSimplex, n, E);
@@ -133,7 +133,7 @@ public class TPR_6sem_2Laba
 					}
 					else
 					{
-						currentF = objectiveFunction(newVertexsStretch);//
+						currentF = TargetFunction(newVertexsStretch);//
 						bool proove = punkt9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
 						if (proove == true) return;
 					}
@@ -167,10 +167,10 @@ public class TPR_6sem_2Laba
 			{
 				newVertexsCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
 			}
-			Console.WriteLine("Сжатая вершина: " + newVertexsCompress[0] + "   " + newVertexsCompress[1] + "    " + objectiveFunction(newVertexsCompress));
+			Console.WriteLine("Сжатая вершина: " + newVertexsCompress[0] + "   " + newVertexsCompress[1] + "    " + TargetFunction(newVertexsCompress));
 			Console.WriteLine("ТУТ" + tableSimplex[currentId, n] + "   " + currentId);
 			// Пункт 10:
-			if (objectiveFunction(newVertexsCompress) < tableSimplex[currentId, n])
+			if (TargetFunction(newVertexsCompress) < tableSimplex[currentId, n])
 			{
 				// Заменяем вершину в таблице
 				int tempInd = -1;
@@ -181,7 +181,7 @@ public class TPR_6sem_2Laba
 							tableSimplex[i, j] = newVertexsCompress[j];
 							tempInd = i;
 						}
-				tableSimplex[tempInd, n] = objectiveFunction(newVertexsCompress);
+				tableSimplex[tempInd, n] = TargetFunction(newVertexsCompress);
 				// Пункт 12:
 				bool proove = punkt12(tableSimplex, n, E);
 				if (proove == true) return true;
@@ -209,7 +209,7 @@ public class TPR_6sem_2Laba
 						}
 						else
 						{
-							if (t == n & i != minVertex) tableSimplex[i, t] = objectiveFunction(mas);
+							if (t == n & i != minVertex) tableSimplex[i, t] = TargetFunction(mas);
 							for (int k = 0; k < mas.Length; k++) mas[k] = 0;
 						}
 					}
@@ -250,7 +250,7 @@ public class TPR_6sem_2Laba
 					}
 					else
 					{
-						if (t == n & i != minVertex) tableSimplex[i, t] = objectiveFunction(mas);
+						if (t == n & i != minVertex) tableSimplex[i, t] = TargetFunction(mas);
 						for (int k = 0; k < mas.Length; k++) mas[k] = 0;
 					}
 				}
@@ -281,7 +281,7 @@ public class TPR_6sem_2Laba
 		for (int i = 0; i < n + 1; i++)
 			for (int t = 0; t < n; t++)
 				centerOfGravityXc[t] = centerOfGravityXc[t] + ((double)1 / (n + 1)) * tableSimplex[i, t];
-		double fxc = objectiveFunction(centerOfGravityXc);
+		double fxc = TargetFunction(centerOfGravityXc);
 		Console.WriteLine("Центр тяжести симплекса:  " + fxc);
 		double sigma = 0;
 		for (int i = 0; i < n + 1; i++)
@@ -320,10 +320,11 @@ public class TPR_6sem_2Laba
 			Console.WriteLine();
 		}
 	}
-	public static double objectiveFunction(double[] mas)
-	{
-		return ((double)13 / 5) * (Math.Pow(mas[0], 2)) - ((double)21 / 10) * mas[1] + ((double)7 / 5) * (Math.Pow(mas[1], 2));// 60 2 переменные
-	}
+	public static double TargetFunction(double[] mas)
+		=> -3.3 * mas[0] +
+		5.2 * Math.Pow(mas[0], 2) -
+		4.2 * mas[1] +
+		2.8 * Math.Pow(mas[1], 2);
 	public static int maxSearch(double[] mas)
 	{
 		double max = mas[0]; int ind = 0;
