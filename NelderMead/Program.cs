@@ -1,6 +1,7 @@
-
 using System;
-public class NelderMead
+using System.Text;
+using System.Collections.Generic;
+public static class NelderMead
 {
 	public static void Main(string[] args)
 	{
@@ -30,14 +31,7 @@ public class NelderMead
 			tableSimplex[i + 1, n] = TargetFunction(tableSimplex[i + 1, 0], tableSimplex[i + 1, 1]);
 		}
 		// Вывод таблицы.
-		for (int i = 0; i < n + 1; i++)
-		{
-			for (int t = 0; t < n + 1; t++)
-			{
-				Console.Write(tableSimplex[i, t] + "\t");
-			}
-			Console.WriteLine();
-		}
+		Console.WriteLine(tableSimplex.TableToString("f3"));
 
 		// Пункт 3:
 		while (true)
@@ -95,8 +89,7 @@ public class NelderMead
 					for (int j = 0; j < n; j++)
 						if (i == maxVertex) { tableSimplex[i, j] = reflectedVertex[j]; }
 				tableSimplex[maxVertex, n] = fReflected;
-				Console.WriteLine("После замены вершины на отраженную:");
-				printMatrix(tableSimplex, n);
+				Console.WriteLine($"После замены вершины на отраженную:\n{tableSimplex.TableToString("f3")}");
 				// Пункт 7:
 				if (currentF < minValue)
 				{
@@ -119,8 +112,7 @@ public class NelderMead
 							for (int j = 0; j < n; j++)
 								if (i == currentId) { tableSimplex[i, j] = newVertexsStretch[j]; }
 						tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
-						Console.WriteLine("После замены вершины на отраженную:");
-						printMatrix(tableSimplex, n);
+						Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
 						bool proove = punkt12(tableSimplex, n, E);
 						if (proove == true) return;
 					}
@@ -160,7 +152,7 @@ public class NelderMead
 			{
 				newVertexsCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
 			}
-			Console.WriteLine("Сжатая вершина: " + newVertexsCompress[0] + "   " + newVertexsCompress[1] + "    " + TargetFunction(newVertexsCompress));
+			Console.WriteLine("Сжатая вершина: " + newVertexsCompress[0] + "   " + newVertexsCompress[1] + "	" + TargetFunction(newVertexsCompress));
 			Console.WriteLine("ТУТ" + tableSimplex[currentId, n] + "   " + currentId);
 			// Пункт 10:
 			if (TargetFunction(newVertexsCompress) < tableSimplex[currentId, n])
@@ -207,15 +199,7 @@ public class NelderMead
 						}
 					}
 				// Вывод таблицы.
-				Console.WriteLine("Таблица после редукции:");
-				for (int i = 0; i < n + 1; i++)
-				{
-					for (int t = 0; t < n + 1; t++)
-					{
-						Console.Write(tableSimplex[i, t] + "\t");
-					}
-					Console.WriteLine();
-				}
+				Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
 				bool proove = punkt12(tableSimplex, n, E);
 				if (proove == true) return true;
 			}
@@ -248,15 +232,7 @@ public class NelderMead
 					}
 				}
 			// Вывод таблицы.
-			Console.WriteLine("Таблица после редукции:");
-			for (int i = 0; i < n + 1; i++)
-			{
-				for (int t = 0; t < n + 1; t++)
-				{
-					Console.Write(tableSimplex[i, t] + "\t");
-				}
-				Console.WriteLine();
-			}
+			Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
 			bool proove = punkt12(tableSimplex, n, E);
 			if (proove == true) return true;
 		}
@@ -302,17 +278,6 @@ public class NelderMead
 			return false;
 		}
 	}
-	public static void printMatrix(double[,] tableSimplex, int n)
-	{
-		for (int i = 0; i < n + 1; i++)
-		{
-			for (int t = 0; t < n + 1; t++)
-			{
-				Console.Write(tableSimplex[i, t] + "\t");
-			}
-			Console.WriteLine();
-		}
-	}
 
 	public static double TargetFunction(double x, double y)
 		=> -3.3 * x +
@@ -347,5 +312,58 @@ public class NelderMead
 		for (int i = 1; i < mas.Length; i++)
 			if (min > mas[i]) { min = mas[i]; ind = i; }
 		return ind;
+	}
+
+	/// <summary>
+	/// Преобразует объект в строку заданного формата, вставляя дополнительные пробелы,
+	/// чтобы подогнать под размер <code>len</code>.
+	/// </summary>
+	/// <param name="toInsert">Объект, который надо преобразовать в строку.</param>
+	/// <param name="len">Минимальная длинна выходной строки.</param>
+	/// <param name="format">Формат вывода.</param>
+	/// <returns>Строка, представляющая объект <code>toInstert</code>.</returns>
+	internal static string ToString(this object toInsert, int len, string format)
+				=> string.Format(string.Format("{{0, {0} :{1}}}", len, format), toInsert);
+	
+	internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
+	{
+		foreach(var e in that)
+			yield return converter(e);
+	}
+
+	/// <summary>
+	/// Превращает двухмерную таблицу в строку.
+	/// </summary>
+	/// <param name="input">Таблица.</param>
+	/// <param name="format">Формат вывода каждого элемента.</param>
+	/// <param name="renderForeach">Функция преобразования </param>
+	/// <returns>Строковое представление каждого элемента массива в виде таблицы.</returns>
+	internal static string TableToString(this Array input, string format = null, Func<dynamic, object> renderForeach = null)
+	{
+		if (input.Rank != 2)
+			throw new NotSupportedException();
+		Array array;
+		if (renderForeach == null)
+			array = input;
+		else
+		{
+			array = new object[input.GetLength(0), input.GetLength(1)];
+			for (int y = 0; y < array.GetLength(0); y++)
+				for (int x = 0; x < array.GetLength(1); x++)
+					array.SetValue(renderForeach(input.GetValue(y, x)), y, x);
+		}
+		int max = -1;
+		foreach (var a in array)
+			if (a.ToString(0, format).Length > max)
+				max = a.ToString(0, format).Length;
+		max++;
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < array.GetLength(0); i++)
+		{
+			for (int j = 0; j < array.GetLength(1); j++)
+				sb.Append(array.GetValue(i, j).ToString(max, format));
+			sb.Append('\n');
+		}
+		return sb.ToString();
 	}
 }
