@@ -1,7 +1,6 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 public static class NelderMead
 {
@@ -12,12 +11,12 @@ public static class NelderMead
     t3:
         ((int I, double Value) max, (int I, double Value) min, (int I, double Value) followMax) = Task3(tableSimplex, n, mas, B, Y, E);
         int currentId = max.I;
-        Console.WriteLine("\n\nМаксимальное значение Fh = " + max.Value);
-        Console.WriteLine("Следующее за максимальным значением Fs = " + followMax.Value);
-        Console.WriteLine("Минимальное значение Fl = " + min.Value);
         double[] centerOfGravityXc = Task4(tableSimplex, n, max.I, mas);
         (double[] reflectedVertex, double fReflected) = Task5(centerOfGravityXc, mas);
-        Console.WriteLine("Значение функции в отражённой вершине: " + fReflected);
+        Console.WriteLine("\n\nМаксимальное значение Fh = " + max.Value
+                            + "\nСледующее за максимальным значением Fs = " + followMax.Value
+                            + "\nМинимальное значение Fl = " + min.Value
+                            + "\nЗначение функции в отражённой вершине: " + fReflected);
         double currentF = fReflected;
         if(Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value))
             goto t3;
