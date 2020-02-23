@@ -41,12 +41,7 @@ public static class NelderMead
 			double[] reflectedVertex = new double[n]; // Координаты отраженной вершины.
 
 			for (int i = 0; i < n + 1; i++)
-			{
-				for (int t = 0; t < n + 1; t++)
-				{
-					if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
-				}
-			}
+				arrayFuncValue[i] = tableSimplex[i, n];
 			// Определяем максимальную, минимальную и следующую за максимальной вершиной.
 			int maxVertex = maxSearch(arrayFuncValue);
 			int minValObjFunction = minSearch(arrayFuncValue);
@@ -264,8 +259,7 @@ public static class NelderMead
 			Console.Write("Поиск окончен так как: ");
 			Console.WriteLine("sigma  = " + sigma + " < E=" + E);
 			for (int i = 0; i < n + 1; i++)
-				for (int t = 0; t < n + 1; t++)
-					if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
+				arrayFuncValue[i] = tableSimplex[i, n];
 
 			int min = minSearch(arrayFuncValue);
 			double resultMin = tableSimplex[min, n];
