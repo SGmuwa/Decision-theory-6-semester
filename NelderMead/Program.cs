@@ -187,15 +187,9 @@ public static class NelderMead
         if (TargetFunction(newVerticesCompress) < tableSimplex[currentId, n])
         {
             // Заменяем вершину в таблице
-            int tempInd = -1;
-            for (int i = 0; i < n + 1; i++)
-                for (int j = 0; j < n; j++)
-                    if (i == currentId)
-                    {
-                        tableSimplex[currentId, j] = newVerticesCompress[j];
-                        tempInd = currentId;
-                    }
-            tableSimplex[tempInd, n] = TargetFunction(newVerticesCompress);
+            for (int j = 0; j < n; j++)
+                tableSimplex[currentId, j] = newVerticesCompress[j];
+            tableSimplex[currentId, n] = TargetFunction(newVerticesCompress);
             // Пункт 12:
             Task12(tableSimplex, n, E);
         }
