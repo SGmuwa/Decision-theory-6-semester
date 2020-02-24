@@ -121,70 +121,91 @@ public static class NelderMead
 
     public static (double[] reflectedVertex, double fReflected) Task5(double[] centerOfGravityXc, double[,] tableSimplex, int maxVertex)
     {
+        Console.WriteLine("Шаг 5.");
         double[] reflectedVertex = new double[centerOfGravityXc.Length];
-        //Находим координаты отраженной вершины.
+        // Находим координаты отраженной вершины.
+        Console.Write("Отражение = f(");
         for (int i = 0; i < centerOfGravityXc.Length; i++)
+        {
             reflectedVertex[i] = 2 * centerOfGravityXc[i] - tableSimplex[maxVertex, i];
+            Console.Write($"2 * {centerOfGravityXc[i]:f3} - {tableSimplex[maxVertex, i]:f3}{(i + 1 < centerOfGravityXc.Length ? "; " : "")}");
+        }
         double fReflected = TargetFunction(reflectedVertex);
-        Console.WriteLine($"\nЗначение функции в отражённой вершине: f({string.Join("; ", reflectedVertex.EveryConverter(e => e.ToString("f3")))}) = {fReflected.ToString("f3")}");
+        Console.WriteLine($") = f({string.Join("; ", reflectedVertex.EveryConverter(e => e.ToString("f3")))}) = {fReflected.ToString("f3")}");
         return (reflectedVertex, fReflected);
     }
 
     public static bool Task6(ref double currentF, in double fReflected, in double maxValue, in int n, in double[,] tableSimplex, in int maxVertex, in double[] reflectedVertex, in double minValue, in double[] mas, in int currentId, in double[] centerOfGravityXc, in double B, in double Y, in double E, in double followMaxValue)
     {
+        Console.WriteLine("Шаг 6.");
         if (fReflected < maxValue)
         {
+            Console.WriteLine($"Отражение меньше максимума. ({fReflected:f3} < {maxValue:f3})");
             // Заменяем вершину в таблице.
             for (int j = 0; j < n; j++)
                 tableSimplex[maxVertex, j] = reflectedVertex[j];
             tableSimplex[maxVertex, n] = fReflected;
-            Console.WriteLine($"После замены вершины на отражённую:\n{tableSimplex.TableToString("f3")}");
+            Console.WriteLine($"После замены вершины [{maxVertex}] на отражённую:\n{tableSimplex.TableToString("f3")}");
             return Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
         }
         else
+        {
+            Console.WriteLine($"Отражение больше или равно максимума. ({fReflected:f3} ≥ {maxValue:f3})");
             return Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+        }
     }
 
     public static bool Task7(ref double currentF, in double minValue, in int n, in int currentId, in double[] mas, in double[,] tableSimplex, in double[] centerOfGravityXc, in double maxValue, in double followMaxValue, in double B, in double E, in double Y)
     {
+        Console.WriteLine("Шаг 7.");
         if (currentF < minValue)
         {
+            Console.WriteLine($"Текущая точка меньше минимума ({currentF:f3} < {minValue:f3}).");
             // Операция растяжения.
             double[] newVertexsStretch = new double[n];
-            for (int j = 0; j < n; j++)
-                mas[j] = tableSimplex[currentId, j];
+            Console.Write("Растяжение = f(");
             for (int r = 0; r < n; r++)
-                newVertexsStretch[r] = centerOfGravityXc[r] + B * (mas[r] - centerOfGravityXc[r]);
-            Console.WriteLine("Значение функции после растяжения: " + TargetFunction(newVertexsStretch).ToString("f3"));
-            return Task8(newVertexsStretch, ref currentF, tableSimplex, currentId, n, E, Y, maxValue, followMaxValue, centerOfGravityXc);
+            {
+                newVertexsStretch[r] = centerOfGravityXc[r] + B * (tableSimplex[currentId, r] - centerOfGravityXc[r]);
+                Console.Write($"{centerOfGravityXc[r]:f3} + {B:f3} * ({tableSimplex[currentId, r]:f3} - {centerOfGravityXc[r]:f3}{(r + 1 < n ? "; " : "")}");
+            }
+            double newVertexsStretchValue = TargetFunction(newVertexsStretch);
+            Console.WriteLine($") = f({string.Join("; ", newVertexsStretch.EveryConverter(e => e.ToString("f3")))}) = {newVertexsStretchValue:f3}");
+            return Task8(newVertexsStretch, newVertexsStretchValue, ref currentF, tableSimplex, currentId, n, E, Y, maxValue, followMaxValue, centerOfGravityXc);
         }
         else
+        {
+            Console.WriteLine($"Текущая точка больше или равна минимому ({currentF:f3} ≥ {minValue:f3}).");
             return Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+        }
     }
 
-    public static bool Task8(in double[] newVertexsStretch, ref double currentF, in double[,] tableSimplex, in int currentId, in int n, in double E, in double Y, in double maxValue, in double followMaxValue, in double[] centerOfGravityXc)
+    public static bool Task8(in double[] newVertexsStretch, in double newVertexsStretchValue, ref double currentF, in double[,] tableSimplex, in int currentId, in int n, in double E, in double Y, in double maxValue, in double followMaxValue, in double[] centerOfGravityXc)
     {
-        if (TargetFunction(newVertexsStretch) < currentF)
+        Console.WriteLine("Шаг 8.");
+        if (newVertexsStretchValue < currentF)
         {
+            Console.WriteLine($"Точка растяжения меньше текущей ({newVertexsStretchValue:f3} < {currentF:f3}).");
             // Заменяем вершину в таблице.
             for (int j = 0; j < n; j++)
                 tableSimplex[currentId, j] = newVertexsStretch[j];
-            tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
-            Console.WriteLine($"После замены вершины на отражённую:\n{tableSimplex.TableToString("f3")}");
+            tableSimplex[currentId, n] = newVertexsStretchValue;
+            Console.WriteLine($"После замены вершины [{currentId}] на точку растяжения:\n{tableSimplex.TableToString("f3")}");
             return Task12(tableSimplex, n, E);
         }
         else
         {
-            currentF = TargetFunction(newVertexsStretch);//
+            currentF = newVertexsStretchValue;
             return Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
         }
     }
 
     public static bool Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
     {
+        Console.WriteLine("Шаг 9.");
         double[] mas = new double[n];
         double[] arrayFuncValue = new double[n + 1];
-        if (currentF < maxValue & currentF > followMaxValue)
+        if (currentF < maxValue && currentF > followMaxValue)
         {
             // Сжатие симплекса.
             double[] newVerticesCompress = new double[n];
@@ -231,7 +252,6 @@ public static class NelderMead
             }
         for (int k = 0; k < mas.Length; k++)
             mas[k] = 0;
-        // Вывод таблицы.
         Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
         return Task12(tableSimplex, n, E);
     }
@@ -253,7 +273,6 @@ public static class NelderMead
             sigma += Math.Pow((tableSimplex[i, n] - fxc), 2) / (n + 1);
         sigma = Math.Sqrt(sigma);
 
-        // Пункт 13:
         return Task13(sigma, E, arrayFuncValue, tableSimplex, n);
     }
 
@@ -261,14 +280,14 @@ public static class NelderMead
     {
         if (sigma < E)
         {
-            Console.Write($"Поиск окончен так как: sigma < E ({sigma:f3} < {E:f3})");
+            Console.Write($"Поиск окончен так как: σ < ε ({sigma:f3} < {E:f3})");
             Console.WriteLine();
             for (int i = 0; i < n + 1; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
 
             int min = SearchMin(arrayFuncValue);
             double resultMin = tableSimplex[min, n];
-            Console.WriteLine($"Минимальная вершина: f([{min}]) = {resultMin:f3}");
+            Console.WriteLine($"Минимальная вершина: [{min}] f([{tableSimplex[min, 0]:f3}; {tableSimplex[min, 1]:f3}]) = {resultMin:f3}");
             return true;
         }
         else
