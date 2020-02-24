@@ -8,7 +8,6 @@ public static class NelderMead
     {
         Task1(out int n, out double E, out double m, out double B, out double Y, out double[] mas, out double[,] tableSimplex);
         Task2(tableSimplex, n, mas, m);
-    t3:
         ((int I, double Value) max, (int I, double Value) min, (int I, double Value) followMax) = Task3(tableSimplex, n, mas, B, Y, E);
         int currentId = max.I;
         double[] centerOfGravityXc = Task4(tableSimplex, n, max.I, mas);
@@ -18,8 +17,7 @@ public static class NelderMead
                             + "\nМинимальное значение Fl = " + min.Value
                             + "\nЗначение функции в отражённой вершине: " + fReflected);
         double currentF = fReflected;
-        if(Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value))
-            goto t3;
+        Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value)
     }
 
     /// <summary>
@@ -72,7 +70,7 @@ public static class NelderMead
 
         for (int i = 0; i < n + 1; i++)
             arrayFuncValue[i] = tableSimplex[i, n];
-        
+
         (int I, double Value) max, min, followMax;
         min.I = SearchMin(arrayFuncValue);
         min.Value = TargetFunction(tableSimplex[min.I, 0], tableSimplex[min.I, 1]);
@@ -107,7 +105,7 @@ public static class NelderMead
         return (reflectedVertex, TargetFunction(reflectedVertex));
     }
 
-    public static bool Task6(ref double currentF, in double fReflected, in double maxValue, in int n, in double[,] tableSimplex, in int maxVertex, in double[] reflectedVertex, in double minValue, in double[] mas, in int currentId, in double[] centerOfGravityXc, in double B, in double Y, in double E, in double followMaxValue)
+    public static void Task6(ref double currentF, in double fReflected, in double maxValue, in int n, in double[,] tableSimplex, in int maxVertex, in double[] reflectedVertex, in double minValue, in double[] mas, in int currentId, in double[] centerOfGravityXc, in double B, in double Y, in double E, in double followMaxValue)
     {
         if (fReflected < maxValue)
         {
@@ -118,19 +116,14 @@ public static class NelderMead
                     if (i == maxVertex) { tableSimplex[i, j] = reflectedVertex[j]; }
             tableSimplex[maxVertex, n] = fReflected;
             Console.WriteLine($"После замены вершины на отраженную:\n{tableSimplex.TableToString("f3")}");
-            return !Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
+            Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
         }
         else
-        {
-            bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-            if (proof == true) return false;
-        }
-        return true;
+            Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
     }
 
-    public static bool Task7(ref double currentF, in double minValue, in int n, in int currentId, in double[] mas, in double[,] tableSimplex, in double[] centerOfGravityXc, in double maxValue, in double followMaxValue, in double B, in double E, in double Y)
+    public static void Task7(ref double currentF, in double minValue, in int n, in int currentId, in double[] mas, in double[,] tableSimplex, in double[] centerOfGravityXc, in double maxValue, in double followMaxValue, in double B, in double E, in double Y)
     {
-        // Пункт 7:
         if (currentF < minValue)
         {
             // Операция растяжения.
@@ -143,35 +136,32 @@ public static class NelderMead
                 newVertexsStretch[r] = centerOfGravityXc[r] + B * (mas[r] - centerOfGravityXc[r]);
             }
             Console.WriteLine("Значение функции после растяжения: " + TargetFunction(newVertexsStretch));
-            // Пункт 8:
-            if (TargetFunction(newVertexsStretch) < currentF)
-            {
-                Console.WriteLine("Пункт 8");
-                // Заменяем вершину в таблице.
-                for (int i = 0; i < n + 1; i++)
-                    for (int j = 0; j < n; j++)
-                        if (i == currentId) { tableSimplex[i, j] = newVertexsStretch[j]; }
-                tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
-                Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
-                bool proof = Task12(tableSimplex, n, E);
-                if (proof == true) return true;
-            }
-            else
-            {
-                currentF = TargetFunction(newVertexsStretch);//
-                bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-                if (proof == true) return true;
-            }
+            Task8(newVertexsStretch, ref currentF, tableSimplex, currentId, n, E, Y, maxValue, followMaxValue, centerOfGravityXc);
+        }
+        else
+            Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
+    }
+
+    public static void Task8(in double[] newVertexsStretch, ref double currentF, in double[,] tableSimplex, in int currentId, in int n, in double E, in double Y, in double maxValue, in double followMaxValue, in double[] centerOfGravityXc)
+    {
+        if (TargetFunction(newVertexsStretch) < currentF)
+        {
+            Console.WriteLine("Пункт 8");
+            // Заменяем вершину в таблице.
+            for (int j = 0; j < n; j++)
+                tableSimplex[currentId, j] = newVertexsStretch[j];
+            tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
+            Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
+            Task12(tableSimplex, n, E);
         }
         else
         {
-            bool proof = Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
-            if (proof == true) return true;
+            currentF = TargetFunction(newVertexsStretch);//
+            Task9(tableSimplex, Y, E, currentF, currentId, maxValue, followMaxValue, n, centerOfGravityXc);
         }
-        return false;
     }
 
-    public static bool Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
+    public static void Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
     {
         Console.WriteLine("Следующее за максимальным = " + followMaxValue + " \t f(x) = " + currentF + "\t максимальное = " + maxValue);
         double[] mas = new double[n];
@@ -180,98 +170,67 @@ public static class NelderMead
         {
             // Сжатие симплекса.
             double[] newVerticesCompress = new double[n];
-            for (int i = 0; i < n + 1; i++)
-                for (int j = 0; j < n; j++)
-                    if (i == currentId) mas[j] = tableSimplex[i, j];
+            for (int j = 0; j < n; j++)
+                mas[j] = tableSimplex[currentId, j];
             for (int r = 0; r < n; r++)
-            {
                 newVerticesCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
-            }
             Console.WriteLine("Сжатая вершина: " + newVerticesCompress[0] + "   " + newVerticesCompress[1] + "	" + TargetFunction(newVerticesCompress));
             Console.WriteLine("ТУТ" + tableSimplex[currentId, n] + "   " + currentId);
-            // Пункт 10:
-            if (TargetFunction(newVerticesCompress) < tableSimplex[currentId, n])
-            {
-                // Заменяем вершину в таблице
-                int tempInd = -1;
-                for (int i = 0; i < n + 1; i++)
-                    for (int j = 0; j < n; j++)
-                        if (i == currentId)
-                        {
-                            tableSimplex[i, j] = newVerticesCompress[j];
-                            tempInd = i;
-                        }
-                tableSimplex[tempInd, n] = TargetFunction(newVerticesCompress);
-                // Пункт 12:
-                bool proof = Task12(tableSimplex, n, E);
-                if (proof == true) return true;
-            }
-            // Пункт 11:
-            else
-            { // Редукция.
-                for (int i = 0; i < n + 1; i++)
-                {
-                    for (int t = 0; t < n + 1; t++)
-                    {
-                        if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
-                    }
-                }
-                int minVertex = SearchMin(arrayFuncValue);
-                Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
-                for (int i = 0; i < n + 1; i++)
-                    for (int t = 0; t < n + 1; t++)
-                    {
-                        if (t != n & i != minVertex)
-                        {
-                            double temp = tableSimplex[i, t];
-                            tableSimplex[i, t] = tableSimplex[minVertex, t] + ((double)1 / 2) * (temp - tableSimplex[minVertex, t]);
-                            mas[t] = tableSimplex[i, t];
-                        }
-                        else
-                        {
-                            if (t == n & i != minVertex) tableSimplex[i, t] = TargetFunction(mas);
-                            for (int k = 0; k < mas.Length; k++) mas[k] = 0;
-                        }
-                    }
-                // Вывод таблицы.
-                Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
-                bool proof = Task12(tableSimplex, n, E);
-                if (proof == true) return true;
-            }
+            Task10(newVerticesCompress, tableSimplex, n, currentId, E, arrayFuncValue, mas);
         }
         else
-        { // Редукция.
-          // Пункт 11:
+            Task11(tableSimplex, arrayFuncValue, n, mas, E);
+    }
+
+    public static void Task10(in double[] newVerticesCompress, in double[,] tableSimplex, in int n, in int currentId, in double E, in double[] arrayFuncValue, in double[] mas)
+    {
+        if (TargetFunction(newVerticesCompress) < tableSimplex[currentId, n])
+        {
+            // Заменяем вершину в таблице
+            int tempInd = -1;
             for (int i = 0; i < n + 1; i++)
+                for (int j = 0; j < n; j++)
+                    if (i == currentId)
+                    {
+                        tableSimplex[currentId, j] = newVerticesCompress[j];
+                        tempInd = currentId;
+                    }
+            tableSimplex[tempInd, n] = TargetFunction(newVerticesCompress);
+            // Пункт 12:
+            Task12(tableSimplex, n, E);
+        }
+        // Пункт 11:
+        else
+            Task11(tableSimplex, arrayFuncValue, n, mas, E);
+    }
+
+    public static void Task11(in double[,] tableSimplex, in double[] arrayFuncValue, in int n, in double[] mas, in double E)
+    {
+        // Редукция.
+        for (int i = 0; i < n + 1; i++)
+            arrayFuncValue[i] = tableSimplex[i, n];
+        int minVertex = SearchMin(arrayFuncValue);
+        Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
+        for (int i = 0; i < n + 1; i++)
+            for (int t = 0; t < n + 1; t++)
             {
-                for (int t = 0; t < n + 1; t++)
+                if (t != n && i != minVertex)
                 {
-                    if (t == n) arrayFuncValue[i] = tableSimplex[i, t];
+                    double temp = tableSimplex[i, t];
+                    tableSimplex[i, t] = tableSimplex[minVertex, t] + ((double)1 / 2) * (temp - tableSimplex[minVertex, t]);
+                    mas[t] = tableSimplex[i, t];
+                }
+                else
+                {
+                    if (t == n & i != minVertex)
+                        tableSimplex[i, t] = TargetFunction(mas);
+                    for (int k = 0; k < mas.Length; k++)
+                        mas[k] = 0;
                 }
             }
-            int minVertex = SearchMin(arrayFuncValue);
-            Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
-            for (int i = 0; i < n + 1; i++)
-                for (int t = 0; t < n + 1; t++)
-                {
-                    if (t != n & i != minVertex)
-                    {
-                        double temp = tableSimplex[i, t];
-                        tableSimplex[i, t] = tableSimplex[minVertex, t] + ((double)1 / 2) * (temp - tableSimplex[minVertex, t]);
-                        mas[t] = tableSimplex[i, t];
-                    }
-                    else
-                    {
-                        if (t == n & i != minVertex) tableSimplex[i, t] = TargetFunction(mas);
-                        for (int k = 0; k < mas.Length; k++) mas[k] = 0;
-                    }
-                }
-            // Вывод таблицы.
-            Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
-            bool proof = Task12(tableSimplex, n, E);
-            if (proof == true) return true;
-        }
-        return false;
+        // Вывод таблицы.
+        Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
+        Task12(tableSimplex, n, E);
     }
 
     public static bool Task12(double[,] tableSimplex, int n, double E)
@@ -429,5 +388,10 @@ public static class NelderMead
             sb.Append('\n');
         }
         return sb.ToString();
+    }
+
+    public class ExitException : Exception
+    {
+        public ExitException(string message) : base(message) { }
     }
 }
