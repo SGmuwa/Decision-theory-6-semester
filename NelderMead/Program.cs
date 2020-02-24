@@ -206,22 +206,15 @@ public static class NelderMead
         int minVertex = SearchMin(arrayFuncValue);
         Console.WriteLine("Редукция. Индекс минимальной вершины в таблице: " + minVertex);
         for (int i = 0; i < n + 1; i++)
-            for (int t = 0; t < n + 1; t++)
+            if (i != minVertex)
             {
-                if (t != n && i != minVertex)
-                {
-                    double temp = tableSimplex[i, t];
-                    tableSimplex[i, t] = tableSimplex[minVertex, t] + ((double)1 / 2) * (temp - tableSimplex[minVertex, t]);
-                    mas[t] = tableSimplex[i, t];
-                }
-                else
-                {
-                    if (t == n & i != minVertex)
-                        tableSimplex[i, t] = TargetFunction(mas);
-                    for (int k = 0; k < mas.Length; k++)
-                        mas[k] = 0;
-                }
+                for (int t = 0; t < n; t++)
+                    mas[t] = tableSimplex[i, t] =
+                        tableSimplex[minVertex, t] + (tableSimplex[i, t] - tableSimplex[minVertex, t]) / 2;
+                tableSimplex[i, n] = TargetFunction(mas);
             }
+        for (int k = 0; k < mas.Length; k++)
+            mas[k] = 0;
         // Вывод таблицы.
         Console.WriteLine($"Таблица после редукции:\n{tableSimplex.TableToString("f3")}");
         Task12(tableSimplex, n, E);
