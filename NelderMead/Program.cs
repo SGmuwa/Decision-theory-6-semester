@@ -21,7 +21,7 @@ public static class NelderMead
                                 + "\nЗначение функции в отражённой вершине: " + fReflected);
             double currentF = fReflected;
             EBad = Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value);
-        } while (EBad);
+        } while (!EBad);
     }
 
     /// <summary>
