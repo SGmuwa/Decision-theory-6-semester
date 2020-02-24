@@ -15,10 +15,7 @@ public static class NelderMead
             int currentId = max.I;
             double[] centerOfGravityXc = Task4(tableSimplex, n, max.I, mas);
             (double[] reflectedVertex, double fReflected) = Task5(centerOfGravityXc, mas);
-            Console.WriteLine("\n\nМаксимальное значение Fh = " + max.Value
-                                + "\nСледующее за максимальным значением Fs = " + followMax.Value
-                                + "\nМинимальное значение Fl = " + min.Value
-                                + "\nЗначение функции в отражённой вершине: " + fReflected);
+            Console.WriteLine($"\nЗначение функции в отражённой вершине: f({string.Join("; ", reflectedVertex.EveryConverter(e => e.ToString("f3")))}) = {fReflected.ToString("f3")}");
             double currentF = fReflected;
             EBad = Task6(ref currentF, fReflected, max.Value, n, tableSimplex, max.I, reflectedVertex, min.Value, mas, currentId, centerOfGravityXc, B, Y, E, followMax.Value);
         } while (!EBad);
@@ -35,8 +32,8 @@ public static class NelderMead
         B = 2.8; // Коэффициент растяжения.
         Y = 0.4; // Коэффициент сжатия.
         mas = new double[n];
-        mas[0] = 0.275;
-        mas[1] = 0.8058;
+        mas[0] = 0.5;
+        mas[1] = 0.5;
         tableSimplex = new double[n + 1, n + 1];
     }
 
@@ -82,6 +79,7 @@ public static class NelderMead
         max.Value = TargetFunction(tableSimplex[max.I, 0], tableSimplex[max.I, 1]);
         followMax.I = SearchFollowMax(arrayFuncValue);
         followMax.Value = TargetFunction(tableSimplex[followMax.I, 0], tableSimplex[followMax.I, 1]);
+        Console.WriteLine($"min = [{min.I}], max = [{max.I}], followMax = [{followMax.I}]");
 
         // Определяем максимальную, минимальную и следующую за максимальной вершиной.
         return (max, min, followMax);
@@ -91,12 +89,13 @@ public static class NelderMead
     {
         double[] centerOfGravityXc = new double[n];
         // Считаем центр тяжести вершин симплекса (кроме максимальной).
-        for (int i = 0; i < n + 1; i++)
-            for (int t = 0; t < n; t++)
-                if (i == maxVertex)
-                    mas[t] = tableSimplex[i, t];
-                else
+        for (int t = 0; t < n; t++)
+            for (int i = 0; i < n + 1; i++)
+            {
+                if (i != maxVertex)
                     centerOfGravityXc[t] = centerOfGravityXc[t] + tableSimplex[i, t] / n;
+                mas[t] = tableSimplex[maxVertex, t];
+            }
         return centerOfGravityXc;
     }
 
@@ -113,13 +112,11 @@ public static class NelderMead
     {
         if (fReflected < maxValue)
         {
-            // Пункт 6:
             // Заменяем вершину в таблице.
-            for (int i = 0; i < n + 1; i++)
-                for (int j = 0; j < n; j++)
-                    if (i == maxVertex) { tableSimplex[i, j] = reflectedVertex[j]; }
+            for (int j = 0; j < n; j++)
+                tableSimplex[maxVertex, j] = reflectedVertex[j];
             tableSimplex[maxVertex, n] = fReflected;
-            Console.WriteLine($"После замены вершины на отраженную:\n{tableSimplex.TableToString("f3")}");
+            Console.WriteLine($"После замены вершины на отражённую:\n{tableSimplex.TableToString("f3")}");
             return Task7(ref currentF, minValue, n, currentId, mas, tableSimplex, centerOfGravityXc, maxValue, followMaxValue, B, E, Y);
         }
         else
@@ -132,14 +129,11 @@ public static class NelderMead
         {
             // Операция растяжения.
             double[] newVertexsStretch = new double[n];
-            for (int i = 0; i < n + 1; i++)
-                for (int j = 0; j < n; j++)
-                    if (i == currentId) mas[j] = tableSimplex[i, j];
+            for (int j = 0; j < n; j++)
+                mas[j] = tableSimplex[currentId, j];
             for (int r = 0; r < n; r++)
-            {
                 newVertexsStretch[r] = centerOfGravityXc[r] + B * (mas[r] - centerOfGravityXc[r]);
-            }
-            Console.WriteLine("Значение функции после растяжения: " + TargetFunction(newVertexsStretch));
+            Console.WriteLine("Значение функции после растяжения: " + TargetFunction(newVertexsStretch).ToString("f3"));
             return Task8(newVertexsStretch, ref currentF, tableSimplex, currentId, n, E, Y, maxValue, followMaxValue, centerOfGravityXc);
         }
         else
@@ -150,12 +144,11 @@ public static class NelderMead
     {
         if (TargetFunction(newVertexsStretch) < currentF)
         {
-            Console.WriteLine("Пункт 8");
             // Заменяем вершину в таблице.
             for (int j = 0; j < n; j++)
                 tableSimplex[currentId, j] = newVertexsStretch[j];
             tableSimplex[currentId, n] = TargetFunction(newVertexsStretch);
-            Console.WriteLine($"После замены вершины на отраженную:{tableSimplex.TableToString("f3")}");
+            Console.WriteLine($"После замены вершины на отражённую:\n{tableSimplex.TableToString("f3")}");
             return Task12(tableSimplex, n, E);
         }
         else
@@ -167,19 +160,19 @@ public static class NelderMead
 
     public static bool Task9(double[,] tableSimplex, double Y, double E, double currentF, int currentId, double maxValue, double followMaxValue, int n, double[] centerOfGravityXc)
     {
-        Console.WriteLine("Следующее за максимальным = " + followMaxValue + " \t f(x) = " + currentF + "\t максимальное = " + maxValue);
         double[] mas = new double[n];
         double[] arrayFuncValue = new double[n + 1];
         if (currentF < maxValue & currentF > followMaxValue)
         {
             // Сжатие симплекса.
             double[] newVerticesCompress = new double[n];
-            for (int j = 0; j < n; j++)
-                mas[j] = tableSimplex[currentId, j];
             for (int r = 0; r < n; r++)
-                newVerticesCompress[r] = centerOfGravityXc[r] + Y * (mas[r] - centerOfGravityXc[r]);
-            Console.WriteLine("Сжатая вершина: " + newVerticesCompress[0] + "   " + newVerticesCompress[1] + "	" + TargetFunction(newVerticesCompress));
-            Console.WriteLine("ТУТ" + tableSimplex[currentId, n] + "   " + currentId);
+                newVerticesCompress[r] =
+                    centerOfGravityXc[r] + Y * (tableSimplex[currentId, r] - centerOfGravityXc[r]);
+            Console.WriteLine("Сжатая вершина: f("
+                + string.Join("; ", newVerticesCompress.EveryConverter(e => e.ToString("f3")))
+                + ") = "
+                + TargetFunction(newVerticesCompress).ToString("f3"));
             return Task10(newVerticesCompress, tableSimplex, n, currentId, E, arrayFuncValue, mas);
         }
         else
@@ -194,17 +187,14 @@ public static class NelderMead
             for (int j = 0; j < n; j++)
                 tableSimplex[currentId, j] = newVerticesCompress[j];
             tableSimplex[currentId, n] = TargetFunction(newVerticesCompress);
-            // Пункт 12:
             return Task12(tableSimplex, n, E);
         }
-        // Пункт 11:
         else
             return Task11(tableSimplex, arrayFuncValue, n, mas, E);
     }
 
     public static bool Task11(in double[,] tableSimplex, in double[] arrayFuncValue, in int n, in double[] mas, in double E)
     {
-        // Редукция.
         for (int i = 0; i < n + 1; i++)
             arrayFuncValue[i] = tableSimplex[i, n];
         int minVertex = SearchMin(arrayFuncValue);
@@ -226,21 +216,19 @@ public static class NelderMead
 
     public static bool Task12(double[,] tableSimplex, int n, double E)
     {
-        // Найдем центр тяжести всего симплекса.
-        Console.WriteLine("\n\nПроверка окончания поиска");
+        // Найдём центр тяжести всего симплекса.
         double[] centerOfGravityXc = new double[n];
         double[] arrayFuncValue = new double[n + 1];
         for (int i = 0; i < centerOfGravityXc.Length; i++)
             centerOfGravityXc[i] = 0;
         for (int i = 0; i < n + 1; i++)
             for (int t = 0; t < n; t++)
-                centerOfGravityXc[t] = centerOfGravityXc[t] + ((double)1 / (n + 1)) * tableSimplex[i, t];
+                centerOfGravityXc[t] += tableSimplex[i, t] / (n + 1);
         double fxc = TargetFunction(centerOfGravityXc);
-        Console.WriteLine("Центр тяжести симплекса:  " + fxc);
+        Console.WriteLine($"Центр тяжести симплекса: f({string.Join("; ", centerOfGravityXc.EveryConverter(e => e.ToString("f3")))}) = {fxc.ToString("f3")}");
         double sigma = 0;
         for (int i = 0; i < n + 1; i++)
-            for (int t = 0; t < n + 1; t++)
-                if (t == n) sigma = sigma + ((double)1 / (n + 1)) * Math.Pow((tableSimplex[i, t] - fxc), 2);
+            sigma += Math.Pow((tableSimplex[i, n] - fxc), 2) / (n + 1);
         sigma = Math.Sqrt(sigma);
 
         // Пункт 13:
@@ -251,19 +239,19 @@ public static class NelderMead
     {
         if (sigma < E)
         {
-            Console.Write("Поиск окончен так как: ");
-            Console.WriteLine("sigma  = " + sigma + " < E=" + E);
+            Console.Write($"Поиск окончен так как: sigma < E ({sigma:f3} < {E:f3})");
+            Console.WriteLine();
             for (int i = 0; i < n + 1; i++)
                 arrayFuncValue[i] = tableSimplex[i, n];
 
             int min = SearchMin(arrayFuncValue);
             double resultMin = tableSimplex[min, n];
-            Console.WriteLine("Минимальная вершина: " + resultMin);
+            Console.WriteLine($"Минимальная вершина: f([{min}]) = {resultMin:f3}");
             return true;
         }
         else
         {
-            Console.WriteLine("Поиск продолжается так как: sigma  = " + sigma + " > E=" + E);
+            Console.WriteLine($"Поиск продолжается так как: sigma ≥ E ({sigma:f3} ≥ {E:f3})");
             return false;
         }
     }
