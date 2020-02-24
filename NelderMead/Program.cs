@@ -385,9 +385,4 @@ public static class NelderMead
         }
         return sb.ToString();
     }
-
-    public class ExitException : Exception
-    {
-        public ExitException(string message) : base(message) { }
-    }
 }
