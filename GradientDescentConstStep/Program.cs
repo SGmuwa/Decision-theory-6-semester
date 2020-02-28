@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 public static class GradientDescentConstStep
@@ -15,10 +16,9 @@ public static class GradientDescentConstStep
         for (int i = 0; i < n; i++)
             mas[i] = 0;
         double[] gradientMas = new double[n];
-        Stack<Element> stack = new Stack<Element>();
-        double func = objectiveFunction(mas);
+        double func = TargetFunction(mas);
         Element elem = new Element(mas[0], mas[1], func);
-        stack.Push(elem);
+        List<Element> history = new List<Element>() { elem };
         gradientMas = gradientSearch(mas);
         double funcResMas;
         do
@@ -30,18 +30,18 @@ public static class GradientDescentConstStep
                     double doubleTempMas = mas[i];
                     mas[i] = doubleTempMas - h * gradientMas[i];
                 }
-                funcResMas = objectiveFunction(mas);
-                if (stack.Peek().result < funcResMas)
+                funcResMas = TargetFunction(mas);
+                if (history[^1].result < funcResMas)
                 {//уменьшение шага
                     double tempH = h;
                     h = tempH / 2;
-                    mas[0] = stack.Peek().x1;
-                    mas[1] = stack.Peek().x2;
+                    mas[0] = history[^1].x1;
+                    mas[1] = history[^1].x2;
                 }
-            } while (stack.Peek().result < funcResMas);
+            } while (history[^1].result < funcResMas);
 
             elem = new Element(mas[0], mas[1], funcResMas);
-            stack.Push(elem);
+            history.Add(elem);
 
             gradientMas = gradientSearch(mas);
             gradientNorm = 0;
@@ -52,14 +52,10 @@ public static class GradientDescentConstStep
         } while (gradientNorm > E);
 
 
-        Console.WriteLine("ОТВЕТ: x1 = " + stack.Peek().x1 + "\t x2 = " + stack.Peek().x2 + "\t f = " + stack.Peek().result);
+        Console.WriteLine("ОТВЕТ: x1 = " + history[^1].x1 + "\t x2 = " + history[^1].x2 + "\t f = " + history[^1].result);
         Console.WriteLine("\nИстория рассматриваемых точек (от минимальной до первой рассмариваемой)");
-        int sizeStack = stack.Count;
-        for (int i = 0; i < sizeStack; i++)
-        {
-            Element el = stack.Pop();
-            Console.WriteLine("x1 = " + el.x1 + "\t x2 = " + el.x2 + "\t f = " + el.result);
-        }
+        int sizeHistory = history.Count;
+        Console.WriteLine(TableToString(history, "f3"));
     }
     public static double TargetFunction(double x, double y)
         => -3.3 * x +
@@ -80,7 +76,7 @@ public static class GradientDescentConstStep
         for (int i = 0; i < mas.Length; i++)
         {
             masTemp[i] += delta;
-            double elem = (double)(objectiveFunction(masTemp) - objectiveFunction(mas)) / delta;
+            double elem = (double)(TargetFunction(masTemp) - TargetFunction(mas)) / delta;
             masResult[i] = elem;
             for (int j = 0; j < mas.Length; j++)
                 masTemp[j] = mas[j];
@@ -88,19 +84,16 @@ public static class GradientDescentConstStep
         return masResult;
     }
 
-    internal static string TableToString<T>(this Stack<IReadOnlyCollection<T>> input, string format = null, Func<dynamic, object> renderForeach = null)
+    internal static string TableToString(this IReadOnlyCollection<Element> input, string format = null, Func<dynamic, object> renderForeach = null)
     {
-        T[,] two = new T[input.Count, input.Peek().Count];
+        double[,] two = new double[input.Count, input.First().Count];
         {
             int i = 0;
-            foreach(IEnumerable<T> line in input)
+            foreach (IEnumerable<double> line in input)
             {
                 int j = 0;
-                foreach(T element in line)
-                {
-                    two[i, j] = element;
-                    j++;
-                }
+                foreach (double element in line)
+                    two[i, j++] = element;
                 i++;
             }
         }
