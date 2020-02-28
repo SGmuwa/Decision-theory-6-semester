@@ -52,9 +52,8 @@ public static class GradientDescentConstStep
         } while (gradientNorm > E);
 
 
-        Console.WriteLine("ОТВЕТ: x1 = " + history[^1].x1 + "\t x2 = " + history[^1].x2 + "\t f = " + history[^1].result);
+        Console.WriteLine($"ОТВЕТ: f({history[^1].x1.ToString("f3")}; {history[^1].x2.ToString("f3")}) = {history[^1].result.ToString("f3")}");
         Console.WriteLine("\nИстория рассматриваемых точек (от минимальной до первой рассмариваемой)");
-        int sizeHistory = history.Count;
         Console.WriteLine(TableToString(history, "f3"));
     }
     public static double TargetFunction(double x, double y)
@@ -76,7 +75,7 @@ public static class GradientDescentConstStep
         for (int i = 0; i < mas.Length; i++)
         {
             masTemp[i] += delta;
-            double elem = (double)(TargetFunction(masTemp) - TargetFunction(mas)) / delta;
+            double elem = (TargetFunction(masTemp) - TargetFunction(mas)) / delta;
             masResult[i] = elem;
             for (int j = 0; j < mas.Length; j++)
                 masTemp[j] = mas[j];
