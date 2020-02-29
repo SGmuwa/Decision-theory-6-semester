@@ -60,8 +60,17 @@ public static class GradientDescentConstStep
         for (int i = 0; i < x.Length; i++)
             mdfx += x[i] * x[i];
         mdfx = Math.Sqrt(mdfx);
-        Console.WriteLine($"||∇f{x.PointToString()}|| = {mdfx}.");
-        return mdfx <= E;
+        Console.WriteLine($"||∇f{x.PointToString()}|| = {mdfx}; ε = {E}.");
+        if(mdfx < E)
+        {
+            Console.WriteLine($"{mdfx} ≤ {E}: Переход к 6 шагу.");
+            return true;
+        }
+        else
+        {
+            Console.WriteLine($"{mdfx} > {E}: Переход в 8 шагу.");
+            return false;
+        }
     }
 
     public static void Step6(in double[] dfx, in double h, in double mdfx, out double nx)
