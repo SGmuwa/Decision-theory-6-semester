@@ -12,9 +12,9 @@ public static class GradientDescentConstStep
         Step2(out int k);
         Step3(in x, in f, out double fx);
         Step4(in x, in df, out x);
-        while (Step5(in E, in x, out double mdfx))
+        while (Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
         {
-
+            Step6(in dfx, in h, in mdfx, out double nx);
         }
         Step8();
     }
@@ -62,6 +62,11 @@ public static class GradientDescentConstStep
         mdfx = Math.Sqrt(mdfx);
         Console.WriteLine($"||∇f{x.PointToString()}|| = {mdfx}.");
         return mdfx <= E;
+    }
+
+    public static void Step6(in double[] dfx, in double h, in double mdfx, out double nx)
+    {
+        
     }
 
     public static double TargetFunction(double x, double y)
