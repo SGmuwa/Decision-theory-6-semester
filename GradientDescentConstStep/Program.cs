@@ -8,9 +8,19 @@ public static class GradientDescentConstStep
 {
     public static void Main(string[] args)
     {
-        double E = 0.1;
-        double h = 0.4;
+        Step1(out double E, out double h, out Func<double[], double> f, out Func<int, double[], double> df);
     }
+
+    public static void Step1(out double E, out double h, out Func<double[], double> f, out Func<int, double[], double> df)
+    {
+        Console.WriteLine("Шаг 1.");
+        E = 0.1;
+        h = 0.4;
+        f = TargetFunction;
+        df = GradientTargetFunction;
+        Console.WriteLine($"ε = {E}; h = {h}.");
+    }
+
     public static double TargetFunction(double x, double y)
         => -3.3 * x +
         5.2 * Math.Pow(x, 2) -
@@ -19,6 +29,15 @@ public static class GradientDescentConstStep
 
     public static double TargetFunction(double[] args)
         => TargetFunction(args[0], args[1]);
+
+    public static double GradientTargetFunctionX(double x, double y)
+        => 10.4*x - 3.3;
+
+    public static double GradientTargetFunctionY(double x, double y)
+        => 5.6*y - 4.2;
+
+    public static double GradientTargetFunction(int i, double[] args)
+        => i == 0 ? GradientTargetFunctionX(args[0], args[1]) : i == 1 ? GradientTargetFunctionY(args[0], args[1]) : double.NaN;
 
     internal static string TableToString(this IReadOnlyCollection<Element> input, string format = null, Func<dynamic, object> renderForeach = null)
     {
