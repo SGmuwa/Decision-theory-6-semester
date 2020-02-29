@@ -8,17 +8,26 @@ public static class GradientDescentConstStep
 {
     public static void Main(string[] args)
     {
-        Step1(out double E, out double h, out Func<double[], double> f, out Func<int, double[], double> df);
+        Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df);
+        Step2(out int k);
     }
 
-    public static void Step1(out double E, out double h, out Func<double[], double> f, out Func<int, double[], double> df)
+    public static void Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df)
     {
         Console.WriteLine("Шаг 1.");
         E = 0.1;
         h = 0.4;
+        x = new double[2] { 0.5, 0.5 };
         f = TargetFunction;
         df = GradientTargetFunction;
         Console.WriteLine($"ε = {E}; h = {h}.");
+    }
+
+    public static void Step2(out int k)
+    {
+        Console.WriteLine("Шаг 2.");
+        k = 0;
+        Console.WriteLine("k = {k}.");
     }
 
     public static double TargetFunction(double x, double y)
@@ -31,10 +40,10 @@ public static class GradientDescentConstStep
         => TargetFunction(args[0], args[1]);
 
     public static double GradientTargetFunctionX(double x, double y)
-        => 10.4*x - 3.3;
+        => 10.4 * x - 3.3;
 
     public static double GradientTargetFunctionY(double x, double y)
-        => 5.6*y - 4.2;
+        => 5.6 * y - 4.2;
 
     public static double GradientTargetFunction(int i, double[] args)
         => i == 0 ? GradientTargetFunctionX(args[0], args[1]) : i == 1 ? GradientTargetFunctionY(args[0], args[1]) : double.NaN;
