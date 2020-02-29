@@ -14,7 +14,7 @@ public static class GradientDescentConstStep
         Step4(in x, in df, out x);
         while (Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
         {
-            Step6(in dfx, in h, in mdfx, out double nx);
+            Step6(in x, in h, in mdfx, out double[] nx);
         }
         Step8();
     }
@@ -73,9 +73,17 @@ public static class GradientDescentConstStep
         }
     }
 
-    public static void Step6(in double[] dfx, in double h, in double mdfx, out double nx)
+    public static void Step6(in double[] x, in double h, in double mdfx, out double[] nx)
     {
-        
+        Console.WriteLine("Шаг 6.");
+        nx = new double[x.Length];
+        Console.Write("x[k+1] = (");
+        for (int i = 0; i < x.Length; i++)
+        {
+            nx[i] = x[i] - h * mdfx;
+            Console.Write($"{x[i]} - {h} * {mdfx}{(i + 1 < x.Length ? "; " : ") = ")}");
+        }
+        Console.WriteLine(nx.PointToString());
     }
 
     public static double TargetFunction(double x, double y)
