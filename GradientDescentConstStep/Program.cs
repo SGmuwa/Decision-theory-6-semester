@@ -13,7 +13,7 @@ public static class GradientDescentConstStep
         Step3(in x, in f, out double fx);
     t4:
         Step4(in x, in df, out x);
-        if (!Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
+        if (Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
             goto t8;
     t6:
         Step6(in x, in h, in mdfx, out double[] nx);
@@ -53,10 +53,11 @@ public static class GradientDescentConstStep
     public static void Step4(in double[] x, in Func<int, double[], double> df, out double[] dfx)
     {
         Console.WriteLine("Шаг 4.");
-        dfx = new double[x.Length];
-        for (int i = 0; i < dfx.Length; i++)
-            dfx[i] = df(i, x);
-        Console.WriteLine($"Δf{x.PointToString()} = {dfx.PointToString()}");
+        double[] _dfx = new double[x.Length];
+        for (int i = 0; i < _dfx.Length; i++)
+            _dfx[i] = df(i, x);
+        Console.WriteLine($"Δf{x.PointToString()} = {_dfx.PointToString()}");
+        dfx = _dfx;
     }
 
     public static bool Step5(in double E, in double[] x, out double mdfx)
@@ -67,14 +68,14 @@ public static class GradientDescentConstStep
             mdfx += x[i] * x[i];
         mdfx = Math.Sqrt(mdfx);
         Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3") + '²'))}) = {mdfx:f3}; ε = {E:f3}.");
-        if (mdfx < E)
+        if (mdfx <= E)
         {
-            Console.WriteLine($"{mdfx:f3} ≤ {E:f3}: Переход к 6 шагу.");
+            Console.WriteLine($"{mdfx:f3} ≤ {E:f3}: Переход к 8 шагу.");
             return true;
         }
         else
         {
-            Console.WriteLine($"{mdfx:f3} > {E:f3}: Переход к 8 шагу.");
+            Console.WriteLine($"{mdfx:f3} > {E:f3}: Переход к 6 шагу.");
             return false;
         }
     }
