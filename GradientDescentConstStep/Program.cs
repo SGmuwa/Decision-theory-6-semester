@@ -12,6 +12,11 @@ public static class GradientDescentConstStep
         Step2(out int k);
         Step3(in x, in f, out double fx);
         Step4(in x, in df, out double[] dfx);
+        while (Step5(in E, in dfx, out double mdfx))
+        {
+
+        }
+        Step8();
     }
 
     public static void Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df)
@@ -43,9 +48,19 @@ public static class GradientDescentConstStep
     {
         Console.WriteLine("Шаг 4.");
         dfx = new double[x.Length];
-        for(int i = 0; i < dfx.Length; i++)
+        for (int i = 0; i < dfx.Length; i++)
             dfx[i] = df(i, x);
         Console.WriteLine($"Δf({string.Join("; ", x.EveryConverter(e => e.ToString("f3")))}) = ({string.Join("; ", dfx.EveryConverter(e => e.ToString("f3")))})");
+    }
+
+    public static bool Step5(in double E, in double[] dfx, out double mdfx)
+    {
+        Console.WriteLine("Шаг 5.");
+        mdfx = 0;
+        for (int i = 0; i < dfx.Length; i++)
+            mdfx += dfx[i] * dfx[i];
+        mdfx = Math.Sqrt(mdfx);
+        return mdfx <= E;
     }
 
     public static double TargetFunction(double x, double y)
