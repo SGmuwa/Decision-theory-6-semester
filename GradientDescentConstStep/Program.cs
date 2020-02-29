@@ -106,7 +106,7 @@ public static class GradientDescentConstStep
         }
         else
         {
-            Console.WriteLine($"{nfx.ToString("f3")} ≥ {fx.ToString("f3")}: h = {h.ToString("f3")} / 2 = {(h/=2).ToString("f3")}, переход к шагу 4.");
+            Console.WriteLine($"{nfx:f3} ≥ {fx:f3}: h = {h:f3} / 2 = {h/=2:f3}; переход к шагу 6.");
             return false;
         }
     }
