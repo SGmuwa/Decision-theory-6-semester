@@ -11,11 +11,17 @@ public static class GradientDescentConstStep
         Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df);
         Step2(out int k);
         Step3(in x, in f, out double fx);
+    t4:
         Step4(in x, in df, out x);
-        while (Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
-        {
-            Step6(in x, in h, in mdfx, out double[] nx);
-        }
+        if (!Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
+            goto t8;
+    t6:
+        Step6(in x, in h, in mdfx, out double[] nx);
+        if(Step7(in x, in nx, in f, ref h, ref k, ref fx))
+            goto t4;
+        else
+            goto t6;
+    t8:
         Step8();
     }
 
@@ -60,15 +66,15 @@ public static class GradientDescentConstStep
         for (int i = 0; i < x.Length; i++)
             mdfx += x[i] * x[i];
         mdfx = Math.Sqrt(mdfx);
-        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3²")))}) = {mdfx}; ε = {E}.");
-        if(mdfx < E)
+        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3²")))}) = {mdfx:f3}; ε = {E:f3}.");
+        if (mdfx < E)
         {
-            Console.WriteLine($"{mdfx} ≤ {E}: Переход к 6 шагу.");
+            Console.WriteLine($"{mdfx:f3} ≤ {E:f3}: Переход к 6 шагу.");
             return true;
         }
         else
         {
-            Console.WriteLine($"{mdfx} > {E}: Переход в 8 шагу.");
+            Console.WriteLine($"{mdfx:f3} > {E:f3}: Переход в 8 шагу.");
             return false;
         }
     }
@@ -81,9 +87,28 @@ public static class GradientDescentConstStep
         for (int i = 0; i < x.Length; i++)
         {
             nx[i] = x[i] - h * mdfx;
-            Console.Write($"{x[i]} - {h} * {mdfx}{(i + 1 < x.Length ? "; " : ") = ")}");
+            Console.Write($"{x[i]:f3} - {h:f3} * {mdfx:f3}{(i + 1 < x.Length ? "; " : ") = ")}");
         }
         Console.WriteLine(nx.PointToString());
+    }
+
+    public static bool Step7(in double[] x, in double[] nx, in Func<double[], double> f, ref double h, ref int k, ref double fx)
+    {
+        Console.WriteLine("Шаг 7.");
+        double nfx = f(nx);
+        Console.WriteLine($"f{nx.PointToString()} = {nfx:f3}.");
+        if(nfx < fx)
+        {
+            k++;
+            fx = nfx;
+            Console.WriteLine($"{nfx:f3} < {fx:f3}: k = {k}, переход к шагу 4.");
+            return true;
+        }
+        else
+        {
+            Console.WriteLine($"{nfx.ToString("f3")} ≥ {fx.ToString("f3")}: h = {h.ToString("f3")} / 2 = {(h/=2).ToString("f3")}, переход к шагу 4.");
+            return false;
+        }
     }
 
     public static double TargetFunction(double x, double y)
