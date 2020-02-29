@@ -10,51 +10,6 @@ public static class GradientDescentConstStep
     {
         double E = 0.1;
         double h = 0.4;
-        double gradientNorm;
-        int n = 2;
-        double[] mas = new double[n];//координаты текущей точки
-        for (int i = 0; i < n; i++)
-            mas[i] = 0;
-        double[] gradientMas = new double[n];
-        double func = TargetFunction(mas);
-        Element elem = new Element(mas[0], mas[1], func);
-        List<Element> history = new List<Element>() { elem };
-        gradientMas = gradientSearch(mas);
-        double funcResMas;
-        do
-        {
-            do
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    double doubleTempMas = mas[i];
-                    mas[i] = doubleTempMas - h * gradientMas[i];
-                }
-                funcResMas = TargetFunction(mas);
-                if (history[^1].result < funcResMas)
-                {//уменьшение шага
-                    double tempH = h;
-                    h = tempH / 2;
-                    mas[0] = history[^1].x1;
-                    mas[1] = history[^1].x2;
-                }
-            } while (history[^1].result < funcResMas);
-
-            elem = new Element(mas[0], mas[1], funcResMas);
-            history.Add(elem);
-
-            gradientMas = gradientSearch(mas);
-            gradientNorm = 0;
-            for (int i = 0; i < n; i++)
-                gradientNorm += Math.Pow(gradientMas[i], 2);
-            double grTemp = gradientNorm;
-            gradientNorm = Math.Sqrt(grTemp);
-        } while (gradientNorm > E);
-
-
-        Console.WriteLine($"ОТВЕТ: f({history[^1].x1.ToString("f3")}; {history[^1].x2.ToString("f3")}) = {history[^1].result.ToString("f3")}");
-        Console.WriteLine("\nИстория рассматриваемых точек (от минимальной до первой рассмариваемой)");
-        Console.WriteLine(TableToString(history, "f3"));
     }
     public static double TargetFunction(double x, double y)
         => -3.3 * x +
@@ -64,24 +19,6 @@ public static class GradientDescentConstStep
 
     public static double TargetFunction(double[] args)
         => TargetFunction(args[0], args[1]);
-
-    public static double[] gradientSearch(double[] mas)
-    {
-        double[] masResult = new double[mas.Length];
-        double delta = 0.000000001;
-        double[] masTemp = new double[mas.Length];
-        for (int i = 0; i < mas.Length; i++)
-            masTemp[i] = mas[i];
-        for (int i = 0; i < mas.Length; i++)
-        {
-            masTemp[i] += delta;
-            double elem = (TargetFunction(masTemp) - TargetFunction(mas)) / delta;
-            masResult[i] = elem;
-            for (int j = 0; j < mas.Length; j++)
-                masTemp[j] = mas[j];
-        }
-        return masResult;
-    }
 
     internal static string TableToString(this IReadOnlyCollection<Element> input, string format = null, Func<dynamic, object> renderForeach = null)
     {
@@ -153,56 +90,28 @@ public static class GradientDescentConstStep
     }
 }
 
-public class Element : IEnumerable<double>, ICollection<double>, IReadOnlyCollection<double>
+public struct Element : IEnumerable<double>, IReadOnlyCollection<double>
 {
-    private readonly double[] memory = new double[3];
-    public double x1 { set => memory[0] = value; get => memory[0]; }
-    public double x2 { set => memory[1] = value; get => memory[1]; }
-    public double result { set => memory[2] = value; get => memory[2]; }
+    public double x { set; get; }
+    public double y { set; get; }
+    public double f { set; get; }
 
-    public int Count => ((ICollection<double>)memory).Count;
+    public int Count => 3;
 
-    public bool IsReadOnly => ((ICollection<double>)memory).IsReadOnly;
-
-    public Element(double x1, double x2, double result)
+    public Element(double x, double y, double f)
     {
-        this.x1 = x1;
-        this.x2 = x2;
-        this.result = result;
+        this.x = x;
+        this.y = y;
+        this.f = f;
     }
 
     public IEnumerator<double> GetEnumerator()
     {
-        return ((IEnumerable<double>)memory).GetEnumerator();
+        yield return x;
+        yield return y;
+        yield return f;
     }
 
     IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable<double>)memory).GetEnumerator();
-    }
-
-    public void Add(double item)
-    {
-        ((ICollection<double>)memory).Add(item);
-    }
-
-    public void Clear()
-    {
-        ((ICollection<double>)memory).Clear();
-    }
-
-    public bool Contains(double item)
-    {
-        return ((ICollection<double>)memory).Contains(item);
-    }
-
-    public void CopyTo(double[] array, int arrayIndex)
-    {
-        ((ICollection<double>)memory).CopyTo(array, arrayIndex);
-    }
-
-    public bool Remove(double item)
-    {
-        return ((ICollection<double>)memory).Remove(item);
-    }
+        => GetEnumerator();
 }
