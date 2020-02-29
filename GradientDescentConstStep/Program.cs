@@ -12,8 +12,8 @@ public static class GradientDescentConstStep
         Step2(out int k);
         Step3(in x, in f, out double fx);
     t4:
-        Step4(in x, in df, out x);
-        if (Step5(in E, in x, out double mdfx))  // modulus of delta f(x)
+        Step4(in x, in df, out double[] dfx);
+        if (Step5(in E, in x, in dfx, out double mdfx))  // modulus of delta f(x)
             goto t8;
     t6:
         Step6(in x, in h, in mdfx, out double[] nx);
@@ -53,21 +53,20 @@ public static class GradientDescentConstStep
     public static void Step4(in double[] x, in Func<int, double[], double> df, out double[] dfx)
     {
         Console.WriteLine("Шаг 4.");
-        double[] _dfx = new double[x.Length];
-        for (int i = 0; i < _dfx.Length; i++)
-            _dfx[i] = df(i, x);
-        Console.WriteLine($"Δf{x.PointToString()} = {_dfx.PointToString()}");
-        dfx = _dfx;
+        dfx = new double[x.Length];
+        for (int i = 0; i < dfx.Length; i++)
+            dfx[i] = df(i, x);
+        Console.WriteLine($"Δf{x.PointToString()} = {dfx.PointToString()}");
     }
 
-    public static bool Step5(in double E, in double[] x, out double mdfx)
+    public static bool Step5(in double E, in double[] x, in double[] dfx, out double mdfx)
     {
         Console.WriteLine("Шаг 5.");
         mdfx = 0;
         for (int i = 0; i < x.Length; i++)
-            mdfx += x[i] * x[i];
+            mdfx += dfx[i] * dfx[i];
         mdfx = Math.Sqrt(mdfx);
-        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3") + '²'))}) = {mdfx:f3}; ε = {E:f3}.");
+        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", dfx.EveryConverter(e => e.ToString("f3") + '²'))}) = {mdfx:f3}; ε = {E:f3}.");
         if (mdfx <= E)
         {
             Console.WriteLine($"{mdfx:f3} ≤ {E:f3}: Переход к 8 шагу.");
@@ -90,7 +89,7 @@ public static class GradientDescentConstStep
             nx[i] = x[i] - h * mdfx;
             Console.Write($"{x[i]:f3} - {h:f3} * {mdfx:f3}{(i + 1 < x.Length ? "; " : ") = ")}");
         }
-        Console.WriteLine(nx.PointToString());
+        Console.WriteLine($"{nx.PointToString()}.");
     }
 
     public static bool Step7(in double[] x, in double[] nx, in Func<double[], double> f, ref double h, ref int k, ref double fx)
