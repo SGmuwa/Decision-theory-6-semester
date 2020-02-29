@@ -22,7 +22,7 @@ public static class GradientDescentConstStep
         else
             goto t6;
     t8:
-        Step8();
+        Step8(in x, in fx);
     }
 
     public static void Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df)
@@ -110,6 +110,9 @@ public static class GradientDescentConstStep
             return false;
         }
     }
+
+    public static void Step8(in double[] x, in double fx)
+        => Console.WriteLine($"Шаг 8.\nОтвет: f{x.PointToString()} = {fx:f3}");
 
     public static double TargetFunction(double x, double y)
         => -3.3 * x +
