@@ -11,8 +11,8 @@ public static class GradientDescentConstStep
         Step1(out double E, out double h, out double[] x, out Func<double[], double> f, out Func<int, double[], double> df);
         Step2(out int k);
         Step3(in x, in f, out double fx);
-        Step4(in x, in df, out double[] dfx);
-        while (Step5(in E, in dfx, out double mdfx))
+        Step4(in x, in df, out x);
+        while (Step5(in E, in x, out double mdfx))
         {
 
         }
@@ -53,13 +53,14 @@ public static class GradientDescentConstStep
         Console.WriteLine($"Δf({string.Join("; ", x.EveryConverter(e => e.ToString("f3")))}) = ({string.Join("; ", dfx.EveryConverter(e => e.ToString("f3")))})");
     }
 
-    public static bool Step5(in double E, in double[] dfx, out double mdfx)
+    public static bool Step5(in double E, in double[] x, out double mdfx)
     {
         Console.WriteLine("Шаг 5.");
         mdfx = 0;
-        for (int i = 0; i < dfx.Length; i++)
-            mdfx += dfx[i] * dfx[i];
+        for (int i = 0; i < x.Length; i++)
+            mdfx += x[i] * x[i];
         mdfx = Math.Sqrt(mdfx);
+        Console.WriteLine($"||∇f{x.PointToString()}|| = {mdfx}.");
         return mdfx <= E;
     }
 
@@ -80,6 +81,9 @@ public static class GradientDescentConstStep
 
     public static double GradientTargetFunction(int i, double[] args)
         => i == 0 ? GradientTargetFunctionX(args[0], args[1]) : i == 1 ? GradientTargetFunctionY(args[0], args[1]) : double.NaN;
+
+    internal static string PointToString(this double[] x, string format = "f3")
+        => $"({string.Join("; ", x.EveryConverter(e => e.ToString(format)))})";
 
     internal static string TableToString(this IReadOnlyCollection<Element> input, string format = null, Func<dynamic, object> renderForeach = null)
     {
