@@ -33,21 +33,21 @@ public static class GradientDescentConstStep
         x = new double[2] { 0.5, 0.5 };
         f = TargetFunction;
         df = GradientTargetFunction;
-        Console.WriteLine($"ε = {E}; h = {h}.");
+        Console.WriteLine($"ε = {E:f3}; h = {h:f3}; x = {x.PointToString()}.");
     }
 
     public static void Step2(out int k)
     {
         Console.WriteLine("Шаг 2.");
         k = 0;
-        Console.WriteLine("k = {k}.");
+        Console.WriteLine($"k = {k}.");
     }
 
     public static void Step3(in double[] x, in Func<double[], double> f, out double fx)
     {
         Console.WriteLine("Шаг 3.");
         fx = f(x);
-        Console.WriteLine($"f({string.Join("; ", x.EveryConverter(e => e.ToString("f3")))}) = {fx.ToString("f3")}.");
+        Console.WriteLine($"f{x.PointToString()} = {fx:f3}.");
     }
 
     public static void Step4(in double[] x, in Func<int, double[], double> df, out double[] dfx)
@@ -56,7 +56,7 @@ public static class GradientDescentConstStep
         dfx = new double[x.Length];
         for (int i = 0; i < dfx.Length; i++)
             dfx[i] = df(i, x);
-        Console.WriteLine($"Δf({string.Join("; ", x.EveryConverter(e => e.ToString("f3")))}) = ({string.Join("; ", dfx.EveryConverter(e => e.ToString("f3")))})");
+        Console.WriteLine($"Δf{x.PointToString()} = {dfx.PointToString()}");
     }
 
     public static bool Step5(in double E, in double[] x, out double mdfx)
@@ -66,7 +66,7 @@ public static class GradientDescentConstStep
         for (int i = 0; i < x.Length; i++)
             mdfx += x[i] * x[i];
         mdfx = Math.Sqrt(mdfx);
-        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3²")))}) = {mdfx:f3}; ε = {E:f3}.");
+        Console.WriteLine($"||∇f{x.PointToString()}|| = √({string.Join(" + ", x.EveryConverter(e => e.ToString("f3") + '²'))}) = {mdfx:f3}; ε = {E:f3}.");
         if (mdfx < E)
         {
             Console.WriteLine($"{mdfx:f3} ≤ {E:f3}: Переход к 6 шагу.");
@@ -74,7 +74,7 @@ public static class GradientDescentConstStep
         }
         else
         {
-            Console.WriteLine($"{mdfx:f3} > {E:f3}: Переход в 8 шагу.");
+            Console.WriteLine($"{mdfx:f3} > {E:f3}: Переход к 8 шагу.");
             return false;
         }
     }
