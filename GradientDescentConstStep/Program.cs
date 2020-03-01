@@ -56,7 +56,7 @@ public static class GradientDescentConstStep
         dfx = new double[x.Length];
         for (int i = 0; i < dfx.Length; i++)
             dfx[i] = df(i, x);
-        Console.WriteLine($"Δf{x.PointToString()} = {dfx.PointToString()}");
+        Console.WriteLine($"Δf{x.PointToString()} = {dfx.PointToString()}.");
     }
 
     public static bool Step5(in double E, in double[] x, in double[] dfx, out double mdfx)
@@ -113,7 +113,7 @@ public static class GradientDescentConstStep
     }
 
     public static void Step8(in double[] x, in double fx)
-        => Console.WriteLine($"Шаг 8.\nОтвет: f{x.PointToString()} = {fx:f3}");
+        => Console.WriteLine($"Шаг 8.\nОтвет: f{x.PointToString()} = {fx:f3}.");
 
     public static double TargetFunction(double x, double y)
         => -3.3 * x +
