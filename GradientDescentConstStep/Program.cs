@@ -136,98 +136,9 @@ public static class GradientDescentConstStep
     internal static string PointToString(this double[] x, string format = "f3")
         => $"({string.Join("; ", x.EveryConverter(e => e.ToString(format)))})";
 
-    internal static string TableToString(this IReadOnlyCollection<Element> input, string format = null, Func<dynamic, object> renderForeach = null)
-    {
-        double[,] two = new double[input.Count, input.First().Count];
-        {
-            int i = 0;
-            foreach (IEnumerable<double> line in input)
-            {
-                int j = 0;
-                foreach (double element in line)
-                    two[i, j++] = element;
-                i++;
-            }
-        }
-        return two.TableToString(format, renderForeach);
-    }
-
-    /// <summary>
-    /// Преобразует объект в строку заданного формата, вставляя дополнительные пробелы,
-    /// чтобы подогнать под размер <code>len</code>.
-    /// </summary>
-    /// <param name="toInsert">Объект, который надо преобразовать в строку.</param>
-    /// <param name="len">Минимальная длинна выходной строки.</param>
-    /// <param name="format">Формат вывода.</param>
-    /// <returns>Строка, представляющая объект <code>toInstert</code>.</returns>
-    internal static string ToString(this object toInsert, int len, string format)
-                => string.Format(string.Format("{{0, {0} :{1}}}", len, format), toInsert);
-
     internal static IEnumerable<O> EveryConverter<T, O>(this IEnumerable<T> that, Func<T, O> converter)
     {
         foreach (var e in that)
             yield return converter(e);
     }
-
-    /// <summary>
-    /// Превращает двухмерную таблицу в строку.
-    /// </summary>
-    /// <param name="input">Таблица.</param>
-    /// <param name="format">Формат вывода каждого элемента.</param>
-    /// <param name="renderForeach">Функция преобразования </param>
-    /// <returns>Строковое представление каждого элемента массива в виде таблицы.</returns>
-    internal static string TableToString(this Array input, string format = null, Func<dynamic, object> renderForeach = null)
-    {
-        if (input.Rank != 2)
-            throw new NotSupportedException();
-        Array array;
-        if (renderForeach == null)
-            array = input;
-        else
-        {
-            array = new object[input.GetLength(0), input.GetLength(1)];
-            for (int y = 0; y < array.GetLength(0); y++)
-                for (int x = 0; x < array.GetLength(1); x++)
-                    array.SetValue(renderForeach(input.GetValue(y, x)), y, x);
-        }
-        int max = -1;
-        foreach (var a in array)
-            if (a.ToString(0, format).Length > max)
-                max = a.ToString(0, format).Length;
-        max++;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < array.GetLength(0); i++)
-        {
-            for (int j = 0; j < array.GetLength(1); j++)
-                sb.Append(array.GetValue(i, j).ToString(max, format));
-            sb.Append('\n');
-        }
-        return sb.ToString();
-    }
-}
-
-public struct Element : IEnumerable<double>, IReadOnlyCollection<double>
-{
-    public double x { set; get; }
-    public double y { set; get; }
-    public double f { set; get; }
-
-    public int Count => 3;
-
-    public Element(double x, double y, double f)
-    {
-        this.x = x;
-        this.y = y;
-        this.f = f;
-    }
-
-    public IEnumerator<double> GetEnumerator()
-    {
-        yield return x;
-        yield return y;
-        yield return f;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-        => GetEnumerator();
 }
