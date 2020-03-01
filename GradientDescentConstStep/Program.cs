@@ -17,7 +17,7 @@ public static class GradientDescentConstStep
             goto t8;
     t6:
         Step6(in x, in h, in dfx, out double[] nx);
-        if(Step7(in x, in nx, in f, ref h, ref k, ref fx))
+        if(Step7(ref x, in nx, in f, ref h, ref k, ref fx))
             goto t4;
         else
             goto t6;
@@ -92,7 +92,7 @@ public static class GradientDescentConstStep
         Console.WriteLine($"{nx.PointToString()}.");
     }
 
-    public static bool Step7(in double[] x, in double[] nx, in Func<double[], double> f, ref double h, ref int k, ref double fx)
+    public static bool Step7(ref double[] x, in double[] nx, in Func<double[], double> f, ref double h, ref int k, ref double fx)
     {
         Console.WriteLine("Шаг 7.");
         double nfx = f(nx);
@@ -101,6 +101,7 @@ public static class GradientDescentConstStep
         {
             k++;
             fx = nfx;
+            x = nx;
             Console.WriteLine($"{nfx:f3} < {fx:f3}: k = {k}, переход к шагу 4.");
             return true;
         }
